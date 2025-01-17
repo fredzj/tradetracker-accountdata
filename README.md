@@ -17,3 +17,6 @@
 
 ## Download TradeTracker Data
 8. Schedule downloadTradeTrackerData.php in order to import your TradeTracker account data and save these into your database.
+
+## View TradeTracker Dashboard
+9. Open index.php in your browser.
