@@ -16,4 +16,4 @@
 7. Transfer /database/sql.inc.php to the /database folder on your server.
 
 ## Download TradeTracker Data
-8. Schedule downloadTradeTrackerData.php in order to get your TradeTracker account data and save these into your database.
+8. Schedule downloadTradeTrackerData.php in order to import your TradeTracker account data and save these into your database.
