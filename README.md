@@ -11,7 +11,7 @@
 
 ## Transfer Files
 4. Transfer /public/index.php to the webroot folder on your server.  
-5. Transfer /jobs/downloadTradeTrackerData.php to the cronjobs folder on your server.  
+5. Transfer /jobs/downloadTradeTrackerData.php to the /cronjobs folder on your server.  
 6. Transfer /config/db.ini to the /config folder on your server.  
 7. Transfer /database/sql.inc.php to the /database folder on your server.
 
