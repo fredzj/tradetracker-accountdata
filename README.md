@@ -7,7 +7,7 @@ Enter your hostname, databasename, username, and password in file /config/db.ini
 Import all /database/*.sql files into your database.
 
 ## Save TradeTracker API Credentials
-Create a new row in the 'config' table where column 'name' contains the value "tradetracker" and column 'configuration' contains your TradeTracker API credentials (formatted as "{"customerID":"######","passphrase":"########################################"}").
+Create a new row in the 'config' table where column 'name' contains the value "tradetracker" and column 'configuration' contains your [TradeTracker API](https://affiliate.tradetracker.com/webService) credentials (formatted as "{"customerID":"######","passphrase":"########################################"}").
 
 ## Transfer Files
 Transfer /public/index.php to the webroot folder on your server.
