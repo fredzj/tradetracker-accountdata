@@ -935,20 +935,8 @@ try {
 	### STANDARD INIT ROUTINE
 	###
 	
-	date_default_timezone_set(	'Europe/Amsterdam');
-	mb_internal_encoding(		'UTF-8');
-	setlocale(LC_ALL,			'nl_NL.utf8');
-	$time_start				=	microtime(true);
-	$server_domains_root	=	substr(__DIR__, 0, mb_strrpos(__DIR__, '/'));
-
-	# Parse the DB configuration file
-	$config_file_name_db	=	$server_domains_root . '/config/db.ini';
-	if (($dbconfig			=	parse_ini_file($config_file_name_db,	FALSE, INI_SCANNER_TYPED)) === FALSE) {
-		throw new Exception("Parsing file " . $config_file_name_db	. " FAILED");
-	}
-
-	# Get the SQL queries
-	require $server_domains_root . '/database/sql.inc.php';
+	require 'includes/init.inc.php';
+	require 'includes/vendor_tradetracker_sql.inc.php';
 
 	###
 	### CUSTOM INIT ROUTINE
@@ -1021,15 +1009,5 @@ try {
 	### STANDARD EXIT ROUTINE
 	###
 
-	$execution_time	= microtime(true) - $time_start;
-	
-	($execution_time > 120)	?	$text		= round($execution_time / 60, 2) . " minutes"
-							:	$text		= round($execution_time     , 2) . " seconds";
-	
-	echo date("[G:i:s] ") . PHP_EOL;
-	echo date("[G:i:s] ") . 'Memory usage' . PHP_EOL;
-	echo date("[G:i:s] ") . '- current usage: '	. round(memory_get_usage()		/ (1024 * 1024)) . ' MB' . PHP_EOL;
-	echo date("[G:i:s] ") . '- peak usage: '	. round(memory_get_peak_usage() / (1024 * 1024)) . ' MB' . PHP_EOL;
-	echo date("[G:i:s] ") . PHP_EOL;
-	echo date("[G:i:s] ") . 'Total Execution Time: ' . $text . PHP_EOL;
+	require 'includes/exit.inc.php';
 }

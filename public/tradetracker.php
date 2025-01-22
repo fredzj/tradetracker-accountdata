@@ -499,7 +499,7 @@ function get_html_report_campaigns($dbh, $fmtCUR, $fmtDEC) {
 		$html	.=	'<td>' . $fmtCUR->formatCurrency($report['clickCommission'],		'EUR') .	'</td>';
 		$html	.=	'<td>' . $fmtDEC->format($report['leadCount']) .								'</td>';
 		$html	.=	'<td>' . $fmtCUR->formatCurrency($report['leadCommission'],			'EUR') .	'</td>';
-		$html	.=	'<td>' . $fmtDEC->format($report['saleeCount']) .								'</td>';
+		$html	.=	'<td>' . $fmtDEC->format($report['saleCount']) .								'</td>';
 		$html	.=	'<td>' . $fmtCUR->formatCurrency($report['saleCommission'],			'EUR') .	'</td>';
 		$html	.=	'<td>' . $fmtCUR->formatCurrency($report['fixedCommission'],		'EUR') .	'</td>';
 		$html	.=	'<td>' . $fmtDEC->format($report['CTR']) .										'%</td>';
@@ -563,7 +563,7 @@ function get_html_report_references($dbh, $fmtCUR, $fmtDEC) {
 		$html	.=	'<td>' . $fmtCUR->formatCurrency($report['clickCommission'],		'EUR') .	'</td>';
 		$html	.=	'<td>' . $fmtDEC->format($report['leadCount']) .								'</td>';
 		$html	.=	'<td>' . $fmtCUR->formatCurrency($report['leadCommission'],			'EUR') .	'</td>';
-		$html	.=	'<td>' . $fmtDEC->format($report['saleeCount']) .								'</td>';
+		$html	.=	'<td>' . $fmtDEC->format($report['saleCount']) .								'</td>';
 		$html	.=	'<td>' . $fmtCUR->formatCurrency($report['saleCommission'],			'EUR') .	'</td>';
 		$html	.=	'<td>' . $fmtCUR->formatCurrency($report['fixedCommission'],		'EUR') .	'</td>';
 		$html	.=	'<td>' . $fmtDEC->format($report['CTR']) .										'%</td>';
