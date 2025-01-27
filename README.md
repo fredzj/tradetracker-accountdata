@@ -22,7 +22,9 @@ Import all SQL files from the database directory into your database:
 
 ### 3. Save TradeTracker API Credentials
 Insert a new row into the config table with your TradeTracker API credentials:
-`INSERT INTO config (name, configuration) VALUES ('tradetracker', '{"customerID":"######","passphrase":"########################################"}');`
+```sql
+INSERT INTO config (name, configuration) VALUES ('tradetracker', '{"customerID":"######","passphrase":"########################################"}');
+```
 
 ### 4. Transfer Files
 Transfer all files to your server.  
