@@ -9,10 +9,12 @@
 
 ### 1. Save Database Credentials
 Create a file `/config/db.ini` and enter your database credentials in the following format:
-`hostname=your_hostname
+```ini
+hostname=your_hostname
 databasename=your_databasename
 username=your_username
-password=your_password`
+password=your_password
+```
 
 ### 2. Create Database Tables
 Import all SQL files from the database directory into your database:
