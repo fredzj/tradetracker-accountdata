@@ -3,9 +3,10 @@
  * SCRIPT: exit.inc.php
  * PURPOSE: Standard exit routine for all cronjobs.
  * 
- * This file contains functions for interacting with the database, including
- * executing SELECT queries, fetching configuration values, inserting multiple
- * rows into a table, and opening a database connection.
+ * This script is included at the end of all cronjob scripts to perform standard
+ * cleanup and exit routines. It ensures that any necessary finalization tasks
+ * are completed before the script terminates, such as closing database connections,
+ * logging, or sending notifications.
  * 
  * @package tradetracker-accountdata
  * @version 1.0.0

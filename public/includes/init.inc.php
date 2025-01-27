@@ -3,9 +3,9 @@
  * SCRIPT: init.inc.php
  * PURPOSE: Standard initialization for all cronjobs.
  * 
- * This file contains functions for interacting with the database, including
- * executing SELECT queries, fetching configuration values, inserting multiple
- * rows into a table, and opening a database connection.
+ * This script is included at the beginning of all cronjob scripts to perform standard
+ * initialization tasks. It sets up the necessary environment, including loading configuration
+ * files, establishing database connections, and initializing any required variables or services.
  * 
  * @package tradetracker-accountdata
  * @version 1.0.0

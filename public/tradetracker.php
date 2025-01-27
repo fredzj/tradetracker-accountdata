@@ -3,9 +3,11 @@
  * SCRIPT: tradetracker.php
  * PURPOSE: Show data from TradeTracker in a dashboard.
  * 
- * This file contains functions for interacting with the database, including
- * executing SELECT queries, fetching configuration values, inserting multiple
- * rows into a table, and opening a database connection.
+ * This script generates a web-based dashboard that displays various data from TradeTracker.
+ * It connects to the database to fetch data related to affiliate sites, campaigns, transactions,
+ * and reports, and presents this data in a user-friendly format using HTML tables and Bootstrap
+ * for styling. The dashboard provides an overview of the TradeTracker account, allowing users
+ * to easily view and analyze the data.
  * 
  * @package tradetracker-accountdata
  * @version 1.0.0

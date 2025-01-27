@@ -3,9 +3,10 @@
  * SCRIPT: downloadTradeTrackerData.php
  * PURPOSE: Download data from TradeTracker and insert the data into the database.
  * 
- * This file contains functions for interacting with the database, including
- * executing SELECT queries, fetching configuration values, inserting multiple
- * rows into a table, and opening a database connection.
+ * This script connects to the TradeTracker API to download various types of data, such as
+ * affiliate sites, campaigns, transactions, and reports. It processes the retrieved data
+ * and inserts it into the corresponding database tables. The script ensures that the data
+ * is up-to-date and accurately reflects the current state of the TradeTracker account.
  * 
  * @package tradetracker-accountdata
  * @version 1.0.0
