@@ -1,19 +1,35 @@
 ﻿# tradetracker-accountdata
 
-## Save Database Credentials
-1. Enter your hostname, databasename, username, and password in file /config/db.ini.
+## Prerequisites
+- PHP
+- MySQL or MariaDB
+- TradeTracker API credentials
 
-## Create Database Tables
-2. Import all /database/*.sql files into your database.
+## Setup Instructions
 
-## Save TradeTracker API Credentials
-3. Create a new row in the 'config' table where column 'name' contains the value "tradetracker" and column 'configuration' contains your [TradeTracker API](https://affiliate.tradetracker.com/webService) credentials (formatted as "{"customerID":"######","passphrase":"########################################"}").
+### 1. Save Database Credentials
+Create a file `/config/db.ini` and enter your database credentials in the following format:
+```ini
+hostname=your_hostname
+databasename=your_databasename
+username=your_username
+password=your_password
 
-## Transfer Files
-4. Transfer all files to your server.  
+### 2. Create Database Tables
+Import all SQL files from the database directory into your database:
+`mysql -u your_username -p your_databasename < /path/to/database/file.sql`
 
-## Download TradeTracker Data
-5. Schedule downloadTradeTrackerData.php in order to import your TradeTracker account data and save these into your database.
+### 3. Save TradeTracker API Credentials
+Insert a new row into the config table with your TradeTracker API credentials:
+`INSERT INTO config (name, configuration) VALUES ('tradetracker', '{"customerID":"######","passphrase":"########################################"}');`
 
-## View TradeTracker Dashboard
-6. Open tradetracker.php in your browser.
+### 4. Transfer Files
+Transfer all files to your server.  
+
+### 5. Download TradeTracker Data
+Schedule `downloadTradeTrackerData.php` to run periodically to import your TradeTracker account data into your database.
+
+### 6. View TradeTracker Dashboard
+Open `tradetracker.php` in your browser to view the TradeTracker dashboard.
+
+
