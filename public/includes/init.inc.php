@@ -1,7 +1,7 @@
 <?php
 /**
  * SCRIPT: init.inc.php
- * PURPOSE: Standard initialization for all cronjobs.
+ * PURPOSE: Standard initialization for TradeTracker dashboard.
  * 
  * This script is included at the beginning of all cronjob scripts to perform standard
  * initialization tasks. It sets up the necessary environment, including loading configuration
