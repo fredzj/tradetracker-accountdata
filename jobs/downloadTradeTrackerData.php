@@ -1,13 +1,56 @@
 ﻿<?php
-/*
+/**
+ * SCRIPT: downloadTradeTrackerData.php
+ * PURPOSE: Download data from TradeTracker and insert the data into the database.
+ * 
+ * This file contains functions for interacting with the database, including
+ * executing SELECT queries, fetching configuration values, inserting multiple
+ * rows into a table, and opening a database connection.
+ * 
+ * @package tradetracker-accountdata
+ * @version 1.0.0
+ * @since 2024
+ * @license MIT
+ * 
+ * COPYRIGHT: 2024 Fred Onis - All rights reserved.
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ * 
+ * @author Fred Onis
+ */
 
-	SCRIPT:		downloadTradeTrackerData.php
-	
-	PURPOSE:	Download data from TradeTracker and insert the data into the database.
-	
-	Copyright 2024 Fred Onis - All rights reserved.
+/**
+ * Logs an error message with a timestamp.
+ *
+ * @param string $message The error message to log.
+ */
+function logError($message) {
+    echo date("[G:i:s] ") . $message . PHP_EOL;
+}
 
-*/
+/**
+ * Fetches affiliate sites from TradeTracker and inserts them into the database.
+ *
+ * @param PDO $dbh The PDO database connection handle.
+ * @param SoapClient $client The TradeTracker SOAP client.
+ * @param array &$affiliateSiteIDs Reference to an array to store affiliate site IDs.
+ */
 function getAffiliateSites($dbh, $client, &$affiliateSiteIDs) {
 	
 	echo date("[G:i:s] ") . 'getAffiliateSites' . PHP_EOL;
@@ -20,28 +63,35 @@ function getAffiliateSites($dbh, $client, &$affiliateSiteIDs) {
 		
 		$affiliateSiteIDs[$affiliateSite->ID]	=	[];
 		
-		$array		=	[];
-		$array[]	=	addslashes($affiliateSite->ID);
-		$array[]	=	addslashes($affiliateSite->name);
-		$array[]	=	addslashes($affiliateSite->URL);
-		$array[]	=	addslashes($affiliateSite->info->type->name);
-		$array[]	=	addslashes($affiliateSite->info->category->name);
-		$array[]	=	addslashes($affiliateSite->info->description);
-		$array[]	=	addslashes($affiliateSite->info->creationDate);
-		$array[]	=	addslashes($affiliateSite->info->status);
-			
-		$output_values[]	=	"('" . implode("', '", $array) . "')";
+        $output_values[] = [
+            $affiliateSite->ID,
+            $affiliateSite->name,
+            $affiliateSite->URL,
+            $affiliateSite->info->type->name,
+            $affiliateSite->info->category->name,
+            $affiliateSite->info->description,
+            $affiliateSite->info->creationDate,
+            $affiliateSite->info->status
+        ];
 	}
 	
-	dbtruncate(	$dbh, $output_table);
-	dbinsert(	$dbh, $output_table, $output_columns, $output_values);
-	
-	echo date("[G:i:s] ") . '- ' . count($output_values) . ' rows inserted' . PHP_EOL;
-	$output_values	=	[];
+    try {
+        dbtruncate($dbh, $output_table);
+        dbinsert($dbh, $output_table, $output_columns, $output_values);
+        echo date("[G:i:s] ") . '- ' . count($output_values) . ' rows inserted' . PHP_EOL;
+    } catch (Exception $e) {
+        logError('Caught Exception: '    . $e->getMessage());
+    }
 	
 	return;
 }
 
+/**
+ * Fetches affiliate site categories from TradeTracker and inserts them into the database.
+ *
+ * @param PDO $dbh The PDO database connection handle.
+ * @param SoapClient $client The TradeTracker SOAP client.
+ */
 function getAffiliateSiteCategories($dbh, $client) {
 	
 	echo date("[G:i:s] ") . 'getAffiliateSiteCategories' . PHP_EOL;
@@ -52,22 +102,29 @@ function getAffiliateSiteCategories($dbh, $client) {
 
 	foreach ($client->getAffiliateSiteCategories() as $affiliateSiteCategory) {
 		
-		$array		=	[];
-		$array[]	=	addslashes($affiliateSiteCategory->ID);
-		$array[]	=	addslashes($affiliateSiteCategory->name);
-			
-		$output_values[]	=	"('" . implode("', '", $array) . "')";
+        $output_values[] = [
+            $affiliateSiteCategory->ID,
+            $affiliateSiteCategory->name
+        ];
 	}
 	
-	dbtruncate(	$dbh, $output_table);
-	dbinsert(	$dbh, $output_table, $output_columns, $output_values);
-	
-	echo date("[G:i:s] ") . '- ' . count($output_values) . ' rows inserted' . PHP_EOL;
-	$output_values	=	[];
+    try {
+        dbtruncate($dbh, $output_table);
+        dbinsert($dbh, $output_table, $output_columns, $output_values);
+        echo date("[G:i:s] ") . '- ' . count($output_values) . ' rows inserted' . PHP_EOL;
+    } catch (Exception $e) {
+        logError('Caught Exception: '    . $e->getMessage());
+    }
 	
 	return;
 }
 
+/**
+ * Fetches affiliate site types from TradeTracker and inserts them into the database.
+ *
+ * @param PDO $dbh The PDO database connection handle.
+ * @param SoapClient $client The TradeTracker SOAP client.
+ */
 function getAffiliateSiteTypes($dbh, $client) {
 	
 	echo date("[G:i:s] ") . 'getAffiliateSiteTypes' . PHP_EOL;
@@ -78,22 +135,29 @@ function getAffiliateSiteTypes($dbh, $client) {
 
 	foreach ($client->getAffiliateSiteTypes() as $affiliateSiteType) {
 		
-		$array		=	[];
-		$array[]	=	addslashes($affiliateSiteType->ID);
-		$array[]	=	addslashes($affiliateSiteType->name);
-			
-		$output_values[]	=	"('" . implode("', '", $array) . "')";
+        $output_values[] = [
+            $affiliateSiteType->ID,
+            $affiliateSiteType->name
+        ];
 	}
 	
-	dbtruncate(	$dbh, $output_table);
-	dbinsert(	$dbh, $output_table, $output_columns, $output_values);
-	
-	echo date("[G:i:s] ") . '- ' . count($output_values) . ' rows inserted' . PHP_EOL;
-	$output_values	=	[];
+    try {
+        dbtruncate($dbh, $output_table);
+        dbinsert($dbh, $output_table, $output_columns, $output_values);
+        echo date("[G:i:s] ") . '- ' . count($output_values) . ' rows inserted' . PHP_EOL;
+    } catch (Exception $e) {
+        logError('Caught Exception: '    . $e->getMessage());
+    }
 	
 	return;
 }
 
+/**
+ * Fetches campaign categories from TradeTracker and inserts them into the database.
+ *
+ * @param PDO $dbh The PDO database connection handle.
+ * @param SoapClient $client The TradeTracker SOAP client.
+ */
 function getCampaignCategories($dbh, $client) {
 	
 	echo date("[G:i:s] ") . 'getCampaignCategories' . PHP_EOL;
@@ -104,33 +168,40 @@ function getCampaignCategories($dbh, $client) {
 
 	foreach ($client->getCampaignCategories() as $campaignCategory) {
 		
-		$array		=	[];
-		$array[]	=	addslashes($campaignCategory->ID);
-		$array[]	=	addslashes($campaignCategory->name);
-		$array[]	=	'';
-			
-		$output_values[]	=	"('" . implode("', '", $array) . "')";
+        $output_values[] = [
+            $campaignCategory->ID,
+            $campaignCategory->name,
+            ''
+        ];
 		
 		foreach ($campaignCategory->categories as $subcategory) {
 			
-			$array		=	[];
-			$array[]	=	addslashes($subcategory->ID);
-			$array[]	=	addslashes($subcategory->name);
-			$array[]	=	addslashes($campaignCategory->ID);
-				
-			$output_values[]	=	"('" . implode("', '", $array) . "')";
+            $output_values[] = [
+                $subcategory->ID,
+                $subcategory->name,
+                $campaignCategory->ID
+            ];
 		}
 	}
 	
-	dbtruncate(	$dbh, $output_table);
-	dbinsert(	$dbh, $output_table, $output_columns, $output_values);
-	
-	echo date("[G:i:s] ") . '- ' . count($output_values) . ' rows inserted' . PHP_EOL;
-	$output_values	=	[];
+    try {
+        dbtruncate($dbh, $output_table);
+        dbinsert($dbh, $output_table, $output_columns, $output_values);
+        echo date("[G:i:s] ") . '- ' . count($output_values) . ' rows inserted' . PHP_EOL;
+    } catch (Exception $e) {
+        logError('Caught Exception: '    . $e->getMessage());
+    }
 	
 	return;
 }
 
+/**
+ * Fetches extended campaign commission data from TradeTracker and inserts it into the database.
+ *
+ * @param PDO $dbh The PDO database connection handle.
+ * @param SoapClient $client The TradeTracker SOAP client.
+ * @param array $affiliateSiteIDs An array of affiliate site IDs.
+ */
 function getCampaignCommissionExtended($dbh, $client, $affiliateSiteIDs) {
 	
 	echo date("[G:i:s] ") . 'getCampaignCommissionExtended' . PHP_EOL;
@@ -144,43 +215,52 @@ function getCampaignCommissionExtended($dbh, $client, $affiliateSiteIDs) {
 		foreach ($campaignIDs as $campaignID) {
 		
 			$commission	=	$client->getCampaignCommissionExtended($affiliateSiteID, $campaignID);
-				
-			$array		=	[];
-			$array[]	=	addslashes($affiliateSiteID);
-			$array[]	=	addslashes($campaignID);
-			$array[]	=	addslashes($commission->impressionCommission);
-			$array[]	=	addslashes($commission->clickCommission);
-			$array[]	=	addslashes($commission->fixedCommission);
 			
 			$products	=	[];
 			foreach ($commission->products as $commissionProduct) {
 				
-				$products[$commissionProduct->campaignProduct->ID]['name']								=	$commissionProduct->campaignProduct->name;
-				$products[$commissionProduct->campaignProduct->ID]['leadCommission']					=	$commissionProduct->leadCommission;
-				$products[$commissionProduct->campaignProduct->ID]['saleCommissionFixed']				=	$commissionProduct->saleCommissionFixed;
-				$products[$commissionProduct->campaignProduct->ID]['saleCommissionVariable']			=	$commissionProduct->saleCommissionVariable;
-				$products[$commissionProduct->campaignProduct->ID]['iLeadCommission']					=	$commissionProduct->iLeadCommission;
-				$products[$commissionProduct->campaignProduct->ID]['iSaleCommissionFixed']				=	$commissionProduct->iSaleCommissionFixed;
-				$products[$commissionProduct->campaignProduct->ID]['iSaleCommissionVariable']			=	$commissionProduct->iSaleCommissionVariable;
-				$products[$commissionProduct->campaignProduct->ID]['guaranteedCommissionLead']			=	$commissionProduct->guaranteedCommissionLead;
-				$products[$commissionProduct->campaignProduct->ID]['guaranteedCommissionSalesVariable']	=	$commissionProduct->guaranteedCommissionSalesVariable;
-				$products[$commissionProduct->campaignProduct->ID]['guaranteedCommissionSalesFixed']	=	$commissionProduct->guaranteedCommissionSalesFixed;
+                $products[$commissionProduct->campaignProduct->ID] = [
+                    'name' => $commissionProduct->campaignProduct->name,
+                    'leadCommission' => $commissionProduct->leadCommission,
+                    'saleCommissionFixed' => $commissionProduct->saleCommissionFixed,
+                    'saleCommissionVariable' => $commissionProduct->saleCommissionVariable,
+                    'iLeadCommission' => $commissionProduct->iLeadCommission,
+                    'iSaleCommissionFixed' => $commissionProduct->iSaleCommissionFixed,
+                    'iSaleCommissionVariable' => $commissionProduct->iSaleCommissionVariable,
+                    'guaranteedCommissionLead' => $commissionProduct->guaranteedCommissionLead,
+                    'guaranteedCommissionSalesVariable' => $commissionProduct->guaranteedCommissionSalesVariable,
+                    'guaranteedCommissionSalesFixed' => $commissionProduct->guaranteedCommissionSalesFixed
+                ];
 			}
-			$array[]	=	addslashes(json_encode($products));
-			
-			$output_values[]	=	"('" . implode("', '", $array) . "')";
-		}
+				
+            $output_values[] = [
+                $affiliateSiteID,
+                $campaignID,
+                $commission->impressionCommission,
+                $commission->clickCommission,
+                $commission->fixedCommission,
+                json_encode($products)
+            ];
+ 		}
 	}
 
-	dbtruncate(	$dbh, $output_table);
-	dbinsert(	$dbh, $output_table, $output_columns, $output_values);
-	
-	echo date("[G:i:s] ") . '- ' . count($output_values) . ' rows inserted' . PHP_EOL;
-	$output_values	=	[];
+    try {
+        dbtruncate($dbh, $output_table);
+        dbinsert($dbh, $output_table, $output_columns, $output_values);
+        echo date("[G:i:s] ") . '- ' . count($output_values) . ' rows inserted' . PHP_EOL;
+    } catch (Exception $e) {
+        logError('Caught Exception: '    . $e->getMessage());
+    }
 	
 	return;
 }
 
+/**
+ * Fetches campaign news items from TradeTracker and inserts them into the database.
+ *
+ * @param PDO $dbh The PDO database connection handle.
+ * @param SoapClient $client The TradeTracker SOAP client.
+ */
 function getCampaignNewsItems($dbh, $client) {
 	
 	echo date("[G:i:s] ") . 'getCampaignNewsItems' . PHP_EOL;
@@ -191,28 +271,35 @@ function getCampaignNewsItems($dbh, $client) {
 
 	foreach ($client->getCampaignNewsItems() as $campaignNewsItem) {
 		
-		$campaignNewsItem	=	json_decode(json_encode($campaignNewsItem), true);
-		$array		=	[];
-		$array[]	=	addslashes($campaignNewsItem['ID']);
-		$array[]	=	addslashes($campaignNewsItem['campaign']['ID']);
-		$array[]	=	addslashes($campaignNewsItem['campaignNewsType']);
-		$array[]	=	addslashes($campaignNewsItem['title']);
-		$array[]	=	addslashes(str_replace("\n", '<br>', $campaignNewsItem['content']));
-		$array[]	=	addslashes($campaignNewsItem['publishDate']);
-		$array[]	=	addslashes($campaignNewsItem['expirationDate']);
-			
-		$output_values[]	=	"('" . implode("', '", $array) . "')";
+        $output_values[] = [
+            $campaignNewsItem->ID,
+            $campaignNewsItem->campaign->ID,
+            $campaignNewsItem->campaignNewsType,
+            $campaignNewsItem->title,
+            str_replace("\n", '<br>', $campaignNewsItem->content),
+            $campaignNewsItem->publishDate,
+            $campaignNewsItem->expirationDate
+        ];
 	}
 
-	dbtruncate(	$dbh, $output_table);
-	dbinsert(	$dbh, $output_table, $output_columns, $output_values);
-	
-	echo date("[G:i:s] ") . '- ' . count($output_values) . ' rows inserted' . PHP_EOL;
-	$output_values	=	[];
+    try {
+        dbtruncate($dbh, $output_table);
+        dbinsert($dbh, $output_table, $output_columns, $output_values);
+        echo date("[G:i:s] ") . '- ' . count($output_values) . ' rows inserted' . PHP_EOL;
+    } catch (Exception $e) {
+        logError('Caught Exception: '    . $e->getMessage());
+    }
 	
 	return;
 }
 
+/**
+ * Fetches campaigns from TradeTracker and inserts them into the database.
+ *
+ * @param PDO $dbh The PDO database connection handle.
+ * @param SoapClient $client The TradeTracker SOAP client.
+ * @param array &$affiliateSiteIDs Reference to an array to store affiliate site IDs and their campaign IDs.
+ */
 function getCampaigns($dbh, $client, &$affiliateSiteIDs) {
 	
 	echo date("[G:i:s] ") . 'getCampaigns' . PHP_EOL;
@@ -229,60 +316,68 @@ function getCampaigns($dbh, $client, &$affiliateSiteIDs) {
 				
 				$affiliateSiteIDs[$affiliateSiteID][]	=	$campaign->ID;
 			
-				$array		=	[];
-				$array[]	=	addslashes($affiliateSiteID);
-				$array[]	=	addslashes($campaign->ID);
-				$array[]	=	addslashes($campaign->name);
-				$array[]	=	addslashes($campaign->URL);
-				$array[]	=	addslashes($campaign->info->category->name);
-				$array[]	=	addslashes('');													// $campaign->info->subCategories->0->name;
-				$array[]	=	addslashes($campaign->info->campaignDescription);
-				$array[]	=	addslashes($campaign->info->shopDescription);
-				$array[]	=	addslashes($campaign->info->targetGroup);
-				$array[]	=	addslashes($campaign->info->characteristics);
-				$array[]	=	addslashes($campaign->info->imageURL);
-				$array[]	=	addslashes($campaign->info->trackingURL);
-				$array[]	=	addslashes($campaign->info->commission->impressionCommission);
-				$array[]	=	addslashes($campaign->info->commission->clickCommission);
-				$array[]	=	addslashes($campaign->info->commission->fixedCommission);
-				$array[]	=	addslashes($campaign->info->commission->leadCommission);
-				$array[]	=	addslashes($campaign->info->commission->saleCommissionFixed);
-				$array[]	=	addslashes($campaign->info->commission->saleCommissionVariable);
-				$array[]	=	addslashes($campaign->info->commission->iLeadCommission);
-				$array[]	=	addslashes($campaign->info->commission->iSaleCommissionFixed);
-				$array[]	=	addslashes($campaign->info->commission->iSaleCommissionVariable);
-				$array[]	=	addslashes($campaign->info->assignmentStatus);
-				$array[]	=	addslashes($campaign->info->startDate);
-				$array[]	=	addslashes($campaign->info->stopDate);
-				$array[]	=	addslashes($campaign->info->timeZone);
-				$array[]	=	addslashes($campaign->info->clickToConversion);
-				$array[]	=	addslashes($campaign->info->policySearchEngineMarketingStatus);
-				$array[]	=	addslashes($campaign->info->policyEmailMarketingStatus);
-				$array[]	=	addslashes($campaign->info->policyCashbackStatus);
-				$array[]	=	addslashes($campaign->info->policyDiscountCodeStatus);
-				$array[]	=	addslashes($campaign->info->deeplinkingSupported);
-				$array[]	=	addslashes($campaign->info->referencesSupported);
-				$array[]	=	addslashes($campaign->info->leadMaximumAssessmentInterval);
-				$array[]	=	addslashes($campaign->info->leadAverageAssessmentInterval);
-				$array[]	=	addslashes($campaign->info->saleMaximumAssessmentInterval);
-				$array[]	=	addslashes($campaign->info->saleAverageAssessmentInterval);
-				$array[]	=	addslashes($campaign->info->attributionModelLead);
-				$array[]	=	addslashes($campaign->info->attributionModelSales);
-				
-				$output_values[]	=	"('" . implode("', '", $array) . "')";
+                $output_values[] = [
+                    $affiliateSiteID,
+                    $campaign->ID,
+                    $campaign->name,
+                    $campaign->URL,
+                    $campaign->info->category->name,
+                    '', // $campaign->info->subCategories->0->name;
+                    $campaign->info->campaignDescription,
+                    $campaign->info->shopDescription,
+                    $campaign->info->targetGroup,
+                    $campaign->info->characteristics,
+                    $campaign->info->imageURL,
+                    $campaign->info->trackingURL,
+                    $campaign->info->commission->impressionCommission,
+                    $campaign->info->commission->clickCommission,
+                    $campaign->info->commission->fixedCommission,
+                    $campaign->info->commission->leadCommission,
+                    $campaign->info->commission->saleCommissionFixed,
+                    $campaign->info->commission->saleCommissionVariable,
+                    $campaign->info->commission->iLeadCommission,
+                    $campaign->info->commission->iSaleCommissionFixed,
+                    $campaign->info->commission->iSaleCommissionVariable,
+                    $campaign->info->assignmentStatus,
+                    $campaign->info->startDate,
+                    $campaign->info->stopDate,
+                    $campaign->info->timeZone,
+                    $campaign->info->clickToConversion,
+                    $campaign->info->policySearchEngineMarketingStatus,
+                    $campaign->info->policyEmailMarketingStatus,
+                    $campaign->info->policyCashbackStatus,
+                    $campaign->info->policyDiscountCodeStatus,
+                    $campaign->info->deeplinkingSupported,
+                    $campaign->info->referencesSupported,
+                    $campaign->info->leadMaximumAssessmentInterval,
+                    $campaign->info->leadAverageAssessmentInterval,
+                    $campaign->info->saleMaximumAssessmentInterval,
+                    $campaign->info->saleAverageAssessmentInterval,
+                    $campaign->info->attributionModelLead,
+                    $campaign->info->attributionModelSales
+                ];
 			}
 		}
 	}
 	
-	dbtruncate(	$dbh, $output_table);
-	dbinsert(	$dbh, $output_table, $output_columns, $output_values);
-	
-	echo date("[G:i:s] ") . '- ' . count($output_values) . ' rows inserted' . PHP_EOL;
-	$output_values	=	[];
+    try {
+        dbtruncate($dbh, $output_table);
+        dbinsert($dbh, $output_table, $output_columns, $output_values);
+        echo date("[G:i:s] ") . '- ' . count($output_values) . ' rows inserted' . PHP_EOL;
+    } catch (Exception $e) {
+        logError('Caught Exception: '    . $e->getMessage());
+    }
 	
 	return;
 }
 
+/**
+ * Fetches click transactions from TradeTracker and inserts them into the database.
+ *
+ * @param PDO $dbh The PDO database connection handle.
+ * @param SoapClient $client The TradeTracker SOAP client.
+ * @param array $affiliateSiteIDs An array of affiliate site IDs.
+ */
 function getClickTransactions($dbh, $client, $affiliateSiteIDs) {
 	
 	echo date("[G:i:s] ") . 'getClickTransactions' . PHP_EOL;
@@ -295,32 +390,40 @@ function getClickTransactions($dbh, $client, $affiliateSiteIDs) {
 		
 		foreach ($client->getClickTransactions($affiliateSiteID) as $clickTransaction) {
 			
-			$array		=	[];
-			$array[]	=	addslashes($affiliateSiteID);
-			$array[]	=	addslashes($clickTransaction->ID);
-			$array[]	=	addslashes($clickTransaction->campaign->ID);
-			$array[]	=	addslashes($clickTransaction->reference);
-			$array[]	=	addslashes($clickTransaction->transactionType);
-			$array[]	=	addslashes($clickTransaction->transactionStatus);
-			$array[]	=	addslashes($clickTransaction->currency);
-			$array[]	=	addslashes($clickTransaction->commission);
-			$array[]	=	addslashes($clickTransaction->registrationDate);
-			$array[]	=	addslashes($clickTransaction->refererURL);
-			$array[]	=	addslashes($clickTransaction->paidOut);
-
-			$output_values[]	=	"('" . implode("', '", $array) . "')";
+            $output_values[] = [
+                $affiliateSiteID,
+                $clickTransaction->ID,
+                $clickTransaction->campaign->ID,
+                $clickTransaction->reference,
+                $clickTransaction->transactionType,
+                $clickTransaction->transactionStatus,
+                $clickTransaction->currency,
+                $clickTransaction->commission,
+                $clickTransaction->registrationDate,
+                $clickTransaction->refererURL,
+                $clickTransaction->paidOut
+            ];
 		}
 	}
 
-	dbtruncate(	$dbh, $output_table);
-	dbinsert(	$dbh, $output_table, $output_columns, $output_values);
-	
-	echo date("[G:i:s] ") . '- ' . count($output_values) . ' rows inserted' . PHP_EOL;
-	$output_values	=	[];
+    try {
+        dbtruncate($dbh, $output_table);
+        dbinsert($dbh, $output_table, $output_columns, $output_values);
+        echo date("[G:i:s] ") . '- ' . count($output_values) . ' rows inserted' . PHP_EOL;
+    } catch (Exception $e) {
+        logError('Caught Exception: '    . $e->getMessage());
+    }
 	
 	return;
 }
 
+/**
+ * Fetches conversion transactions from TradeTracker and inserts them into the database.
+ *
+ * @param PDO $dbh The PDO database connection handle.
+ * @param SoapClient $client The TradeTracker SOAP client.
+ * @param array $affiliateSiteIDs An array of affiliate site IDs.
+ */
 function getConversionTransactions($dbh, $client, $affiliateSiteIDs) {
 	
 	echo date("[G:i:s] ") . 'getConversionTransactions' . PHP_EOL;
@@ -340,45 +443,53 @@ function getConversionTransactions($dbh, $client, $affiliateSiteIDs) {
 				}
 			}
 			
-			$array		=	[];
-			$array[]	=	addslashes($affiliateSiteID);
-			$array[]	=	addslashes($conversionTransaction->ID);
-			$array[]	=	addslashes($conversionTransaction->campaign->ID);
-			$array[]	=	addslashes($conversionTransaction->campaignProduct->name);
-			$array[]	=	addslashes($conversionTransaction->reference);
-			$array[]	=	addslashes($conversionTransaction->transactionType);
-			$array[]	=	addslashes($conversionTransaction->transactionStatus);
-			$array[]	=	addslashes($conversionTransaction->numTouchPointsTotal);
-			$array[]	=	addslashes($conversionTransaction->numTouchPointsAttributed);
-			$array[]	=	addslashes($conversionTransaction->attributableCommission);
-			$array[]	=	addslashes($conversionTransaction->description);
-			$array[]	=	addslashes($conversionTransaction->currency);
-			$array[]	=	addslashes($conversionTransaction->commission);
-			$array[]	=	addslashes($conversionTransaction->orderAmount);
-			$array[]	=	addslashes($conversionTransaction->IP);
-			$array[]	=	addslashes($conversionTransaction->registrationDate);
-			$array[]	=	addslashes($conversionTransaction->assessmentDate);
-			$array[]	=	addslashes($conversionTransaction->clickToConversion);
-			$array[]	=	addslashes($conversionTransaction->originatingClickDate);
-			$array[]	=	addslashes($conversionTransaction->rejectionReason);
-			$array[]	=	addslashes($conversionTransaction->paidOut);
-			$array[]	=	addslashes(implode('|', $affiliateSitesPaidOut));
-			$array[]	=	addslashes($conversionTransaction->countryCode);
-			$array[]	=	addslashes($conversionTransaction->attributionModel);
-
-			$output_values[]	=	"('" . implode("', '", $array) . "')";
+            $output_values[] = [
+                $affiliateSiteID,
+                $conversionTransaction->ID,
+                $conversionTransaction->campaign->ID,
+                $conversionTransaction->campaignProduct->name,
+                $conversionTransaction->reference,
+                $conversionTransaction->transactionType,
+                $conversionTransaction->transactionStatus,
+                $conversionTransaction->numTouchPointsTotal,
+                $conversionTransaction->numTouchPointsAttributed,
+                $conversionTransaction->attributableCommission,
+                $conversionTransaction->description,
+                $conversionTransaction->currency,
+                $conversionTransaction->commission,
+                $conversionTransaction->orderAmount,
+                $conversionTransaction->IP,
+                $conversionTransaction->registrationDate,
+                $conversionTransaction->assessmentDate,
+                $conversionTransaction->clickToConversion,
+                $conversionTransaction->originatingClickDate,
+                $conversionTransaction->rejectionReason,
+                $conversionTransaction->paidOut,
+                implode('|', $affiliateSitesPaidOut),
+                $conversionTransaction->countryCode,
+                $conversionTransaction->attributionModel
+            ];
 		}
 	}
 
-	dbtruncate(	$dbh, $output_table);
-	dbinsert(	$dbh, $output_table, $output_columns, $output_values);
-	
-	echo date("[G:i:s] ") . '- ' . count($output_values) . ' rows inserted' . PHP_EOL;
-	$output_values	=	[];
+    try {
+        dbtruncate($dbh, $output_table);
+        dbinsert($dbh, $output_table, $output_columns, $output_values);
+        echo date("[G:i:s] ") . '- ' . count($output_values) . ' rows inserted' . PHP_EOL;
+    } catch (Exception $e) {
+        logError('Caught Exception: '    . $e->getMessage());
+    }
 	
 	return;
 }
 
+/**
+ * Fetches feeds from TradeTracker and inserts them into the database.
+ *
+ * @param PDO $dbh The PDO database connection handle.
+ * @param SoapClient $client The TradeTracker SOAP client.
+ * @param array $affiliateSiteIDs An array of affiliate site IDs.
+ */
 function getFeeds($dbh, $client, $affiliateSiteIDs) {
 	
 	echo date("[G:i:s] ") . 'getFeeds' . PHP_EOL;
@@ -393,31 +504,38 @@ function getFeeds($dbh, $client, $affiliateSiteIDs) {
 			
 			if ($feed->assignmentStatus == 'accepted') {
 				
-				$array		=	[];
-				$array[]	=	addslashes($affiliateSiteID);
-				$array[]	=	addslashes($feed->campaign->ID);
-				$array[]	=	addslashes($feed->ID);
-				$array[]	=	addslashes($feed->name);
-				$array[]	=	addslashes($feed->URL);
-				$array[]	=	addslashes($feed->updateDate);
-				$array[]	=	addslashes($feed->updateInterval);
-				$array[]	=	addslashes($feed->productCount);
-				$array[]	=	addslashes($feed->assignmentStatus);
-				
-				$output_values[]	=	"('" . implode("', '", $array) . "')";
+                $output_values[] = [
+                    $affiliateSiteID,
+                    $feed->campaign->ID,
+                    $feed->ID,
+                    $feed->name,
+                    $feed->URL,
+                    $feed->updateDate,
+                    $feed->updateInterval,
+                    $feed->productCount,
+                    $feed->assignmentStatus
+                ];
 			}
 		}
 	}
 	
-	dbtruncate(	$dbh, $output_table);
-	dbinsert(	$dbh, $output_table, $output_columns, $output_values);
-	
-	echo date("[G:i:s] ") . '- ' . count($output_values) . ' rows inserted' . PHP_EOL;
-	$output_values	=	[];
+    try {
+        dbtruncate($dbh, $output_table);
+        dbinsert($dbh, $output_table, $output_columns, $output_values);
+        echo date("[G:i:s] ") . '- ' . count($output_values) . ' rows inserted' . PHP_EOL;
+    } catch (Exception $e) {
+        logError('Caught Exception: '    . $e->getMessage());
+    }
 	
 	return;
 }
 
+/**
+ * Fetches material banner dimensions from TradeTracker and inserts them into the database.
+ *
+ * @param PDO $dbh The PDO database connection handle.
+ * @param SoapClient $client The TradeTracker SOAP client.
+ */
 function getMaterialBannerDimensions($dbh, $client) {
 	
 	echo date("[G:i:s] ") . 'getMaterialBannerDimensions' . PHP_EOL;
@@ -428,25 +546,33 @@ function getMaterialBannerDimensions($dbh, $client) {
 
 	foreach ($client->getMaterialBannerDimensions() as $materialBannerDimension) {
 		
-		$array		=	[];
-		$array[]	=	addslashes($materialBannerDimension->ID);
-		$array[]	=	addslashes($materialBannerDimension->width);
-		$array[]	=	addslashes($materialBannerDimension->height);
-		$array[]	=	addslashes($materialBannerDimension->isCommon);
-		$array[]	=	addslashes($materialBannerDimension->isMobile);
-			
-		$output_values[]	=	"('" . implode("', '", $array) . "')";
+        $output_values[] = [
+            $materialBannerDimension->ID,
+            $materialBannerDimension->width,
+            $materialBannerDimension->height,
+            $materialBannerDimension->isCommon,
+            $materialBannerDimension->isMobile
+        ];
 	}
 	
-	dbtruncate(	$dbh, $output_table);
-	dbinsert(	$dbh, $output_table, $output_columns, $output_values);
-	
-	echo date("[G:i:s] ") . '- ' . count($output_values) . ' rows inserted' . PHP_EOL;
-	$output_values	=	[];
+    try {
+        dbtruncate($dbh, $output_table);
+        dbinsert($dbh, $output_table, $output_columns, $output_values);
+        echo date("[G:i:s] ") . '- ' . count($output_values) . ' rows inserted' . PHP_EOL;
+    } catch (Exception $e) {
+        logError('Caught Exception: '    . $e->getMessage());
+    }
 	
 	return;
 }
 
+/**
+ * Fetches material banner flash items from TradeTracker and inserts them into the database.
+ *
+ * @param PDO $dbh The PDO database connection handle.
+ * @param SoapClient $client The TradeTracker SOAP client.
+ * @param array $affiliateSiteIDs An array of affiliate site IDs.
+ */
 function getMaterialBannerFlashItems($dbh, $client, $affiliateSiteIDs) {
 	
 	echo date("[G:i:s] ") . 'getMaterialBannerFlashItems' . PHP_EOL;
@@ -463,39 +589,47 @@ function getMaterialBannerFlashItems($dbh, $client, $affiliateSiteIDs) {
 		
 			foreach ($client->getMaterialBannerFlashItems($affiliateSiteID, $materialOutputType) as $materialItem) {
 			
-				$array		=	[];
-				$array[]	=	addslashes($affiliateSiteID);
-				$array[]	=	addslashes($materialOutputType);
-				$array[]	=	addslashes($materialItem->ID);
-				$array[]	=	addslashes($materialItem->campaign->ID);
-				$array[]	=	addslashes($materialItem->name);
-				$array[]	=	addslashes($materialItem->creationDate);
-				$array[]	=	addslashes($materialItem->modificationDate);
-				$array[]	=	addslashes($materialItem->materialBannerDimension->ID);
-				$array[]	=	addslashes($materialItem->referenceSupported);
-				$array[]	=	addslashes($materialItem->description);
-				$array[]	=	addslashes($materialItem->conditions);
-				$array[]	=	addslashes($materialItem->validFromDate);
-				$array[]	=	addslashes($materialItem->validToDate);
-				$array[]	=	addslashes($materialItem->discountFixed);
-				$array[]	=	addslashes($materialItem->discountVariable);
-				$array[]	=	addslashes($materialItem->voucherCode);
-				$array[]	=	addslashes($materialItem->code);
-				
-				$output_values[]	=	"('" . implode("', '", $array) . "')";
+                $output_values[] = [
+                    $affiliateSiteID,
+                    $materialOutputType,
+                    $materialItem->ID,
+                    $materialItem->campaign->ID,
+                    $materialItem->name,
+                    $materialItem->creationDate,
+                    $materialItem->modificationDate,
+                    $materialItem->materialBannerDimension->ID,
+                    $materialItem->referenceSupported,
+                    $materialItem->description,
+                    $materialItem->conditions,
+                    $materialItem->validFromDate,
+                    $materialItem->validToDate,
+                    $materialItem->discountFixed,
+                    $materialItem->discountVariable,
+                    $materialItem->voucherCode,
+                    $materialItem->code
+                ];
 			}
 		}
 	}
 	
-	dbtruncate(	$dbh, $output_table);
-	dbinsert(	$dbh, $output_table, $output_columns, $output_values);
-	
-	echo date("[G:i:s] ") . '- ' . count($output_values) . ' rows inserted' . PHP_EOL;
-	$output_values	=	[];
+    try {
+        dbtruncate($dbh, $output_table);
+        dbinsert($dbh, $output_table, $output_columns, $output_values);
+        echo date("[G:i:s] ") . '- ' . count($output_values) . ' rows inserted' . PHP_EOL;
+    } catch (Exception $e) {
+        logError('Caught Exception: '    . $e->getMessage());
+    }
 	
 	return;
 }
 
+/**
+ * Fetches material banner image items from TradeTracker and inserts them into the database.
+ *
+ * @param PDO $dbh The PDO database connection handle.
+ * @param SoapClient $client The TradeTracker SOAP client.
+ * @param array $affiliateSiteIDs An array of affiliate site IDs.
+ */
 function getMaterialBannerImageItems($dbh, $client, $affiliateSiteIDs) {
 	
 	echo date("[G:i:s] ") . 'getMaterialBannerImageItems' . PHP_EOL;
@@ -512,43 +646,47 @@ function getMaterialBannerImageItems($dbh, $client, $affiliateSiteIDs) {
 		
 			foreach ($client->getMaterialBannerImageItems($affiliateSiteID, $materialOutputType) as $materialItem) {
 			
-				$array		=	[];
-				$array[]	=	addslashes($affiliateSiteID);
-				$array[]	=	addslashes($materialOutputType);
-				$array[]	=	addslashes($materialItem->ID);
-				$array[]	=	addslashes($materialItem->campaign->ID);
-				$array[]	=	addslashes($materialItem->name);
-				$array[]	=	addslashes($materialItem->creationDate);
-				$array[]	=	addslashes($materialItem->modificationDate);
-				$array[]	=	addslashes($materialItem->materialBannerDimension->ID);
-				$array[]	=	addslashes($materialItem->referenceSupported);
-				$array[]	=	addslashes($materialItem->description);
-				$array[]	=	addslashes($materialItem->conditions);
-				$array[]	=	addslashes($materialItem->validFromDate);
-				$array[]	=	addslashes($materialItem->validToDate);
-				$array[]	=	addslashes($materialItem->discountFixed);
-				$array[]	=	addslashes($materialItem->discountVariable);
-				$array[]	=	addslashes($materialItem->voucherCode);
-				$array[]	=	addslashes($materialItem->code);
-				
-				$output_values[]	=	"('" . implode("', '", $array) . "')";
-				//
-				//if ($materialItem->campaign->ID == '31985') {
-				//	var_dump($materialItem); echo PHP_EOL;
-				//}
+                $output_values[] = [
+                    $affiliateSiteID,
+                    $materialOutputType,
+                    $materialItem->ID,
+                    $materialItem->campaign->ID,
+                    $materialItem->name,
+                    $materialItem->creationDate,
+                    $materialItem->modificationDate,
+                    $materialItem->materialBannerDimension->ID,
+                    $materialItem->referenceSupported,
+                    $materialItem->description,
+                    $materialItem->conditions,
+                    $materialItem->validFromDate,
+                    $materialItem->validToDate,
+                    $materialItem->discountFixed,
+                    $materialItem->discountVariable,
+                    $materialItem->voucherCode,
+                    $materialItem->code
+                ];
 			}
 		}
 	}
 	
-	dbtruncate(	$dbh, $output_table);
-	dbinsert(	$dbh, $output_table, $output_columns, $output_values);
-	
-	echo date("[G:i:s] ") . '- ' . count($output_values) . ' rows inserted' . PHP_EOL;
-	$output_values	=	[];
+    try {
+        dbtruncate($dbh, $output_table);
+        dbinsert($dbh, $output_table, $output_columns, $output_values);
+        echo date("[G:i:s] ") . '- ' . count($output_values) . ' rows inserted' . PHP_EOL;
+    } catch (Exception $e) {
+        logError('Caught Exception: '    . $e->getMessage());
+    }
 	
 	return;
 }
 
+/**
+ * Fetches material HTML items from TradeTracker and inserts them into the database.
+ *
+ * @param PDO $dbh The PDO database connection handle.
+ * @param SoapClient $client The TradeTracker SOAP client.
+ * @param array $affiliateSiteIDs An array of affiliate site IDs.
+ */
 function getMaterialHTMLItems($dbh, $client, $affiliateSiteIDs) {
 	
 	echo date("[G:i:s] ") . 'getMaterialHTMLItems' . PHP_EOL;
@@ -565,43 +703,47 @@ function getMaterialHTMLItems($dbh, $client, $affiliateSiteIDs) {
 		
 			foreach ($client->getMaterialHTMLItems($affiliateSiteID, $materialOutputType) as $materialItem) {
 			
-				$array		=	[];
-				$array[]	=	addslashes($affiliateSiteID);
-				$array[]	=	addslashes($materialOutputType);
-				$array[]	=	addslashes($materialItem->ID);
-				$array[]	=	addslashes($materialItem->campaign->ID);
-				$array[]	=	addslashes($materialItem->name);
-				$array[]	=	addslashes($materialItem->creationDate);
-				$array[]	=	addslashes($materialItem->modificationDate);
-				if (isset($materialItem->materialBannerDimension)) {
-					$array[]	=	addslashes($materialItem->materialBannerDimension->ID);
-				} else {
-					$array[]	=	'';
-				}
-				$array[]	=	addslashes($materialItem->referenceSupported);
-				$array[]	=	addslashes($materialItem->description);
-				$array[]	=	addslashes($materialItem->conditions);
-				$array[]	=	addslashes($materialItem->validFromDate);
-				$array[]	=	addslashes($materialItem->validToDate);
-				$array[]	=	addslashes($materialItem->discountFixed);
-				$array[]	=	addslashes($materialItem->discountVariable);
-				$array[]	=	addslashes($materialItem->voucherCode);
-				$array[]	=	addslashes($materialItem->code);
-				
-				$output_values[]	=	"('" . implode("', '", $array) . "')";
+                $output_values[] = [
+                    $affiliateSiteID,
+                    $materialOutputType,
+                    $materialItem->ID,
+                    $materialItem->campaign->ID,
+                    $materialItem->name,
+                    $materialItem->creationDate,
+                    $materialItem->modificationDate,
+                    isset($materialItem->materialBannerDimension) ? $materialItem->materialBannerDimension->ID : '',
+                    $materialItem->referenceSupported,
+                    $materialItem->description,
+                    $materialItem->conditions,
+                    $materialItem->validFromDate,
+                    $materialItem->validToDate,
+                    $materialItem->discountFixed,
+                    $materialItem->discountVariable,
+                    $materialItem->voucherCode,
+                    $materialItem->code
+                ];
 			}
 		}
 	}
 	
-	dbtruncate(	$dbh, $output_table);
-	dbinsert(	$dbh, $output_table, $output_columns, $output_values);
-	
-	echo date("[G:i:s] ") . '- ' . count($output_values) . ' rows inserted' . PHP_EOL;
-	$output_values	=	[];
+    try {
+        dbtruncate($dbh, $output_table);
+        dbinsert($dbh, $output_table, $output_columns, $output_values);
+        echo date("[G:i:s] ") . '- ' . count($output_values) . ' rows inserted' . PHP_EOL;
+    } catch (Exception $e) {
+        logError('Caught Exception: '    . $e->getMessage());
+    }
 	
 	return;
 }
 
+/**
+ * Fetches material incentive voucher items from TradeTracker and inserts them into the database.
+ *
+ * @param PDO $dbh The PDO database connection handle.
+ * @param SoapClient $client The TradeTracker SOAP client.
+ * @param array $affiliateSiteIDs An array of affiliate site IDs.
+ */
 function getMaterialIncentiveVoucherItems($dbh, $client, $affiliateSiteIDs) {
 	
 	echo date("[G:i:s] ") . 'getMaterialIncentiveVoucherItems' . PHP_EOL;
@@ -618,43 +760,47 @@ function getMaterialIncentiveVoucherItems($dbh, $client, $affiliateSiteIDs) {
 		
 			foreach ($client->getMaterialIncentiveVoucherItems($affiliateSiteID, $materialOutputType) as $materialItem) {
 			
-				$array		=	[];
-				$array[]	=	addslashes($affiliateSiteID);
-				$array[]	=	addslashes($materialOutputType);
-				$array[]	=	addslashes($materialItem->ID);
-				$array[]	=	addslashes($materialItem->campaign->ID);
-				$array[]	=	addslashes($materialItem->name);
-				$array[]	=	addslashes($materialItem->creationDate);
-				$array[]	=	addslashes($materialItem->modificationDate);
-				if (isset($materialItem->materialBannerDimension)) {
-					$array[]	=	addslashes($materialItem->materialBannerDimension->ID);
-				} else {
-					$array[]	=	'';
-				}
-				$array[]	=	addslashes($materialItem->referenceSupported);
-				$array[]	=	addslashes($materialItem->description);
-				$array[]	=	addslashes($materialItem->conditions);
-				$array[]	=	addslashes($materialItem->validFromDate);
-				$array[]	=	addslashes($materialItem->validToDate);
-				$array[]	=	addslashes($materialItem->discountFixed);
-				$array[]	=	addslashes($materialItem->discountVariable);
-				$array[]	=	addslashes($materialItem->voucherCode);
-				$array[]	=	addslashes($materialItem->code);
-				
-				$output_values[]	=	"('" . implode("', '", $array) . "')";
+                $output_values[] = [
+                    $affiliateSiteID,
+                    $materialOutputType,
+                    $materialItem->ID,
+                    $materialItem->campaign->ID,
+                    $materialItem->name,
+                    $materialItem->creationDate,
+                    $materialItem->modificationDate,
+                    isset($materialItem->materialBannerDimension) ? $materialItem->materialBannerDimension->ID : '',
+                    $materialItem->referenceSupported,
+                    $materialItem->description,
+                    $materialItem->conditions,
+                    $materialItem->validFromDate,
+                    $materialItem->validToDate,
+                    $materialItem->discountFixed,
+                    $materialItem->discountVariable,
+                    $materialItem->voucherCode,
+                    $materialItem->code
+                ];
 			}
 		}
 	}
 	
-	dbtruncate(	$dbh, $output_table);
-	dbinsert(	$dbh, $output_table, $output_columns, $output_values);
-	
-	echo date("[G:i:s] ") . '- ' . count($output_values) . ' rows inserted' . PHP_EOL;
-	$output_values	=	[];
+    try {
+        dbtruncate($dbh, $output_table);
+        dbinsert($dbh, $output_table, $output_columns, $output_values);
+        echo date("[G:i:s] ") . '- ' . count($output_values) . ' rows inserted' . PHP_EOL;
+    } catch (Exception $e) {
+        logError('Caught Exception: '    . $e->getMessage());
+    }
 	
 	return;
 }
 
+/**
+ * Fetches material incentive offer items from TradeTracker and inserts them into the database.
+ *
+ * @param PDO $dbh The PDO database connection handle.
+ * @param SoapClient $client The TradeTracker SOAP client.
+ * @param array $affiliateSiteIDs An array of affiliate site IDs.
+ */
 function getMaterialIncentiveOfferItems($dbh, $client, $affiliateSiteIDs) {
 	
 	echo date("[G:i:s] ") . 'getMaterialIncentiveOfferItems' . PHP_EOL;
@@ -671,43 +817,47 @@ function getMaterialIncentiveOfferItems($dbh, $client, $affiliateSiteIDs) {
 		
 			foreach ($client->getMaterialIncentiveOfferItems($affiliateSiteID, $materialOutputType) as $materialItem) {
 			
-				$array		=	[];
-				$array[]	=	addslashes($affiliateSiteID);
-				$array[]	=	addslashes($materialOutputType);
-				$array[]	=	addslashes($materialItem->ID);
-				$array[]	=	addslashes($materialItem->campaign->ID);
-				$array[]	=	addslashes($materialItem->name);
-				$array[]	=	addslashes($materialItem->creationDate);
-				$array[]	=	addslashes($materialItem->modificationDate);
-				if (isset($materialItem->materialBannerDimension)) {
-					$array[]	=	addslashes($materialItem->materialBannerDimension->ID);
-				} else {
-					$array[]	=	'';
-				}
-				$array[]	=	addslashes($materialItem->referenceSupported);
-				$array[]	=	addslashes($materialItem->description);
-				$array[]	=	addslashes($materialItem->conditions);
-				$array[]	=	addslashes($materialItem->validFromDate);
-				$array[]	=	addslashes($materialItem->validToDate);
-				$array[]	=	addslashes($materialItem->discountFixed);
-				$array[]	=	addslashes($materialItem->discountVariable);
-				$array[]	=	addslashes($materialItem->voucherCode);
-				$array[]	=	addslashes($materialItem->code);
-				
-				$output_values[]	=	"('" . implode("', '", $array) . "')";
+                $output_values[] = [
+                    $affiliateSiteID,
+                    $materialOutputType,
+                    $materialItem->ID,
+                    $materialItem->campaign->ID,
+                    $materialItem->name,
+                    $materialItem->creationDate,
+                    $materialItem->modificationDate,
+                    isset($materialItem->materialBannerDimension) ? $materialItem->materialBannerDimension->ID : '',
+                    $materialItem->referenceSupported,
+                    $materialItem->description,
+                    $materialItem->conditions,
+                    $materialItem->validFromDate,
+                    $materialItem->validToDate,
+                    $materialItem->discountFixed,
+                    $materialItem->discountVariable,
+                    $materialItem->voucherCode,
+                    $materialItem->code
+                ];
 			}
 		}
 	}
 	
-	dbtruncate(	$dbh, $output_table);
-	dbinsert(	$dbh, $output_table, $output_columns, $output_values);
-	
-	echo date("[G:i:s] ") . '- ' . count($output_values) . ' rows inserted' . PHP_EOL;
-	$output_values	=	[];
+    try {
+        dbtruncate($dbh, $output_table);
+        dbinsert($dbh, $output_table, $output_columns, $output_values);
+        echo date("[G:i:s] ") . '- ' . count($output_values) . ' rows inserted' . PHP_EOL;
+    } catch (Exception $e) {
+        logError('Caught Exception: '    . $e->getMessage());
+    }
 	
 	return;
 }
 
+/**
+ * Fetches material text items from TradeTracker and inserts them into the database.
+ *
+ * @param PDO $dbh The PDO database connection handle.
+ * @param SoapClient $client The TradeTracker SOAP client.
+ * @param array $affiliateSiteIDs An array of affiliate site IDs.
+ */
 function getMaterialTextItems($dbh, $client, $affiliateSiteIDs) {
 	
 	echo date("[G:i:s] ") . 'getMaterialTextItems' . PHP_EOL;
@@ -724,43 +874,46 @@ function getMaterialTextItems($dbh, $client, $affiliateSiteIDs) {
 		
 			foreach ($client->getMaterialTextItems($affiliateSiteID, $materialOutputType) as $materialItem) {
 			
-				$array		=	[];
-				$array[]	=	addslashes($affiliateSiteID);
-				$array[]	=	addslashes($materialOutputType);
-				$array[]	=	addslashes($materialItem->ID);
-				$array[]	=	addslashes($materialItem->campaign->ID);
-				$array[]	=	addslashes($materialItem->name);
-				$array[]	=	addslashes($materialItem->creationDate);
-				$array[]	=	addslashes($materialItem->modificationDate);
-				if (isset($materialItem->materialBannerDimension)) {
-					$array[]	=	addslashes($materialItem->materialBannerDimension->ID);
-				} else {
-					$array[]	=	'';
-				}
-				$array[]	=	addslashes($materialItem->referenceSupported);
-				$array[]	=	addslashes($materialItem->description);
-				$array[]	=	addslashes($materialItem->conditions);
-				$array[]	=	addslashes($materialItem->validFromDate);
-				$array[]	=	addslashes($materialItem->validToDate);
-				$array[]	=	addslashes($materialItem->discountFixed);
-				$array[]	=	addslashes($materialItem->discountVariable);
-				$array[]	=	addslashes($materialItem->voucherCode);
-				$array[]	=	addslashes($materialItem->code);
-				
-				$output_values[]	=	"('" . implode("', '", $array) . "')";
+                $output_values[] = [
+                    $affiliateSiteID,
+                    $materialOutputType,
+                    $materialItem->ID,
+                    $materialItem->campaign->ID,
+                    $materialItem->name,
+                    $materialItem->creationDate,
+                    $materialItem->modificationDate,
+                    isset($materialItem->materialBannerDimension) ? $materialItem->materialBannerDimension->ID : '',
+                    $materialItem->referenceSupported,
+                    $materialItem->description,
+                    $materialItem->conditions,
+                    $materialItem->validFromDate,
+                    $materialItem->validToDate,
+                    $materialItem->discountFixed,
+                    $materialItem->discountVariable,
+                    $materialItem->voucherCode,
+                    $materialItem->code
+                ];
 			}
 		}
 	}
 	
-	dbtruncate(	$dbh, $output_table);
-	dbinsert(	$dbh, $output_table, $output_columns, $output_values);
-	
-	echo date("[G:i:s] ") . '- ' . count($output_values) . ' rows inserted' . PHP_EOL;
-	$output_values	=	[];
+    try {
+        dbtruncate($dbh, $output_table);
+        dbinsert($dbh, $output_table, $output_columns, $output_values);
+        echo date("[G:i:s] ") . '- ' . count($output_values) . ' rows inserted' . PHP_EOL;
+    } catch (Exception $e) {
+        logError('Caught Exception: '    . $e->getMessage());
+    }
 	
 	return;
 }
 
+/**
+ * Fetches payments from TradeTracker and inserts them into the database.
+ *
+ * @param PDO $dbh The PDO database connection handle.
+ * @param SoapClient $client The TradeTracker SOAP client.
+ */
 function getPayments($dbh, $client) {
 	
 	echo date("[G:i:s] ") . 'getPayments' . PHP_EOL;
@@ -771,27 +924,35 @@ function getPayments($dbh, $client) {
 
 	foreach ($client->getPayments() as $payment) {
 		
-		$array		=	[];
-		$array[]	=	addslashes($payment->invoiceNumber);
-		$array[]	=	addslashes($payment->currency);
-		$array[]	=	addslashes($payment->subTotal);
-		$array[]	=	addslashes($payment->VAT);
-		$array[]	=	addslashes($payment->endTotal);
-		$array[]	=	addslashes($payment->billDate);
-		$array[]	=	addslashes($payment->payDate);
-			
-		$output_values[]	=	"('" . implode("', '", $array) . "')";
+        $output_values[] = [
+            $payment->invoiceNumber,
+            $payment->currency,
+            $payment->subTotal,
+            $payment->VAT,
+            $payment->endTotal,
+            $payment->billDate,
+            $payment->payDate
+        ];
 	}
 	
-	dbtruncate(	$dbh, $output_table);
-	dbinsert(	$dbh, $output_table, $output_columns, $output_values);
-	
-	echo date("[G:i:s] ") . '- ' . count($output_values) . ' rows inserted' . PHP_EOL;
-	$output_values	=	[];
+    try {
+        dbtruncate($dbh, $output_table);
+        dbinsert($dbh, $output_table, $output_columns, $output_values);
+        echo date("[G:i:s] ") . '- ' . count($output_values) . ' rows inserted' . PHP_EOL;
+    } catch (Exception $e) {
+        logError('Caught Exception: '    . $e->getMessage());
+    }
 	
 	return;
 }
 
+/**
+ * Fetches report data per affiliate site from TradeTracker and inserts them into the database.
+ *
+ * @param PDO $dbh The PDO database connection handle.
+ * @param SoapClient $client The TradeTracker SOAP client.
+ * @param array $affiliateSiteIDs An array of affiliate site IDs.
+ */
 function getReportAffiliateSite($dbh, $client, $affiliateSiteIDs) {
 	
 	echo date("[G:i:s] ") . 'getReportAffiliateSite' . PHP_EOL;
@@ -804,38 +965,46 @@ function getReportAffiliateSite($dbh, $client, $affiliateSiteIDs) {
 		
 		$reportData	=	$client->getReportAffiliateSite($affiliateSiteID);
 		
-		$array		=	[];
-		$array[]	=	addslashes($affiliateSiteID);
-		$array[]	=	addslashes($reportData->overallImpressionCount);
-		$array[]	=	addslashes($reportData->uniqueImpressionCount);
-		$array[]	=	addslashes($reportData->impressionCommission);
-		$array[]	=	addslashes($reportData->overallClickCount);
-		$array[]	=	addslashes($reportData->uniqueClickCount);
-		$array[]	=	addslashes($reportData->clickCommission);
-		$array[]	=	addslashes($reportData->leadCount);
-		$array[]	=	addslashes($reportData->leadCommission);
-		$array[]	=	addslashes($reportData->saleCount);
-		$array[]	=	addslashes($reportData->saleCommission);
-		$array[]	=	addslashes($reportData->fixedCommission);
-		$array[]	=	addslashes($reportData->CTR);
-		$array[]	=	addslashes($reportData->CLR);
-		$array[]	=	addslashes($reportData->CSR);
-		$array[]	=	addslashes($reportData->eCPM);
-		$array[]	=	addslashes($reportData->EPC);
-		$array[]	=	addslashes($reportData->totalCommission);
-		
-		$output_values[]	=	"('" . implode("', '", $array) . "')";
+        $output_values[] = [
+            $affiliateSiteID,
+            $reportData->overallImpressionCount,
+            $reportData->uniqueImpressionCount,
+            $reportData->impressionCommission,
+            $reportData->overallClickCount,
+            $reportData->uniqueClickCount,
+            $reportData->clickCommission,
+            $reportData->leadCount,
+            $reportData->leadCommission,
+            $reportData->saleCount,
+            $reportData->saleCommission,
+            $reportData->fixedCommission,
+            $reportData->CTR,
+            $reportData->CLR,
+            $reportData->CSR,
+            $reportData->eCPM,
+            $reportData->EPC,
+            $reportData->totalCommission
+        ];
 	}
 	
-	dbtruncate(	$dbh, $output_table);
-	dbinsert(	$dbh, $output_table, $output_columns, $output_values);
-	
-	echo date("[G:i:s] ") . '- ' . count($output_values) . ' rows inserted' . PHP_EOL;
-	$output_values	=	[];
+    try {
+        dbtruncate($dbh, $output_table);
+        dbinsert($dbh, $output_table, $output_columns, $output_values);
+        echo date("[G:i:s] ") . '- ' . count($output_values) . ' rows inserted' . PHP_EOL;
+    } catch (Exception $e) {
+        logError('Caught Exception: '    . $e->getMessage());
+    }
 	
 	return;
 }
 
+/**
+ * Fetches report data per campaign from TradeTracker and inserts them into the database.
+ *
+ * @param PDO $dbh The PDO database connection handle.
+ * @param SoapClient $client The TradeTracker SOAP client.
+ * @param array $affiliateSiteIDs An array of affiliate site IDs.
+ */
 function getReportCampaign($dbh, $client, $affiliateSiteIDs) {
 	
 	echo date("[G:i:s] ") . 'getReportCampaign' . PHP_EOL;
@@ -848,40 +1017,48 @@ function getReportCampaign($dbh, $client, $affiliateSiteIDs) {
 		
 		foreach ($client->getReportCampaign($affiliateSiteID) as $reportCampaign) {
 		
-			$array		=	[];
-			$array[]	=	addslashes($affiliateSiteID);
-			$array[]	=	addslashes($reportCampaign->campaign->ID);
-			$array[]	=	addslashes($reportCampaign->reportData->overallImpressionCount);
-			$array[]	=	addslashes($reportCampaign->reportData->uniqueImpressionCount);
-			$array[]	=	addslashes($reportCampaign->reportData->impressionCommission);
-			$array[]	=	addslashes($reportCampaign->reportData->overallClickCount);
-			$array[]	=	addslashes($reportCampaign->reportData->uniqueClickCount);
-			$array[]	=	addslashes($reportCampaign->reportData->clickCommission);
-			$array[]	=	addslashes($reportCampaign->reportData->leadCount);
-			$array[]	=	addslashes($reportCampaign->reportData->leadCommission);
-			$array[]	=	addslashes($reportCampaign->reportData->saleCount);
-			$array[]	=	addslashes($reportCampaign->reportData->saleCommission);
-			$array[]	=	addslashes($reportCampaign->reportData->fixedCommission);
-			$array[]	=	addslashes($reportCampaign->reportData->CTR);
-			$array[]	=	addslashes($reportCampaign->reportData->CLR);
-			$array[]	=	addslashes($reportCampaign->reportData->CSR);
-			$array[]	=	addslashes($reportCampaign->reportData->eCPM);
-			$array[]	=	addslashes($reportCampaign->reportData->EPC);
-			$array[]	=	addslashes($reportCampaign->reportData->totalCommission);
-			
-			$output_values[]	=	"('" . implode("', '", $array) . "')";
+			$output_values[] = [
+				$affiliateSiteID,
+				$reportCampaign->campaign->ID,
+				$reportCampaign->reportData->overallImpressionCount,
+				$reportCampaign->reportData->uniqueImpressionCount,
+				$reportCampaign->reportData->impressionCommission,
+				$reportCampaign->reportData->overallClickCount,
+				$reportCampaign->reportData->uniqueClickCount,
+				$reportCampaign->reportData->clickCommission,
+				$reportCampaign->reportData->leadCount,
+				$reportCampaign->reportData->leadCommission,
+				$reportCampaign->reportData->saleCount,
+				$reportCampaign->reportData->saleCommission,
+				$reportCampaign->reportData->fixedCommission,
+				$reportCampaign->reportData->CTR,
+				$reportCampaign->reportData->CLR,
+				$reportCampaign->reportData->CSR,
+				$reportCampaign->reportData->eCPM,
+				$reportCampaign->reportData->EPC,
+				$reportCampaign->reportData->totalCommission
+			];
 		}
 	}
 	
-	dbtruncate(	$dbh, $output_table);
-	dbinsert(	$dbh, $output_table, $output_columns, $output_values);
-	
-	echo date("[G:i:s] ") . '- ' . count($output_values) . ' rows inserted' . PHP_EOL;
-	$output_values	=	[];
+    try {
+        dbtruncate($dbh, $output_table);
+        dbinsert($dbh, $output_table, $output_columns, $output_values);
+        echo date("[G:i:s] ") . '- ' . count($output_values) . ' rows inserted' . PHP_EOL;
+    } catch (Exception $e) {
+        logError('Caught Exception: '    . $e->getMessage());
+    }
 	
 	return;
 }
 
+/**
+ * Fetches report data per reference from TradeTracker and inserts them into the database.
+ *
+ * @param PDO $dbh The PDO database connection handle.
+ * @param SoapClient $client The TradeTracker SOAP client.
+ * @param array $affiliateSiteIDs An array of affiliate site IDs.
+ */
 function getReportReference($dbh, $client, $affiliateSiteIDs) {
 	
 	echo date("[G:i:s] ") . 'getReportReference' . PHP_EOL;
@@ -894,37 +1071,38 @@ function getReportReference($dbh, $client, $affiliateSiteIDs) {
 		
 		foreach ($client->getReportReference($affiliateSiteID) as $reportReference) {
 		
-			$array		=	[];
-			$array[]	=	addslashes($affiliateSiteID);
-			$array[]	=	addslashes($reportReference->campaign->ID);
-			$array[]	=	addslashes($reportReference->reference);
-			$array[]	=	addslashes($reportReference->reportData->overallImpressionCount);
-			$array[]	=	addslashes($reportReference->reportData->uniqueImpressionCount);
-			$array[]	=	addslashes($reportReference->reportData->impressionCommission);
-			$array[]	=	addslashes($reportReference->reportData->overallClickCount);
-			$array[]	=	addslashes($reportReference->reportData->uniqueClickCount);
-			$array[]	=	addslashes($reportReference->reportData->clickCommission);
-			$array[]	=	addslashes($reportReference->reportData->leadCount);
-			$array[]	=	addslashes($reportReference->reportData->leadCommission);
-			$array[]	=	addslashes($reportReference->reportData->saleCount);
-			$array[]	=	addslashes($reportReference->reportData->saleCommission);
-			$array[]	=	addslashes($reportReference->reportData->fixedCommission);
-			$array[]	=	addslashes($reportReference->reportData->CTR);
-			$array[]	=	addslashes($reportReference->reportData->CLR);
-			$array[]	=	addslashes($reportReference->reportData->CSR);
-			$array[]	=	addslashes($reportReference->reportData->eCPM);
-			$array[]	=	addslashes($reportReference->reportData->EPC);
-			$array[]	=	addslashes($reportReference->reportData->totalCommission);
-			
-			$output_values[]	=	"('" . implode("', '", $array) . "')";
+			$output_values[] = [
+				$affiliateSiteID,
+				$reportReference->campaign->ID,
+				$reportReference->reference,
+				$reportReference->reportData->overallImpressionCount,
+				$reportReference->reportData->uniqueImpressionCount,
+				$reportReference->reportData->impressionCommission,
+				$reportReference->reportData->overallClickCount,
+				$reportReference->reportData->uniqueClickCount,
+				$reportReference->reportData->clickCommission,
+				$reportReference->reportData->leadCount,
+				$reportReference->reportData->leadCommission,
+				$reportReference->reportData->saleCount,
+				$reportReference->reportData->saleCommission,
+				$reportReference->reportData->fixedCommission,
+				$reportReference->reportData->CTR,
+				$reportReference->reportData->CLR,
+				$reportReference->reportData->CSR,
+				$reportReference->reportData->eCPM,
+				$reportReference->reportData->EPC,
+				$reportReference->reportData->totalCommission
+			];
 		}
 	}
 	
-	dbtruncate(	$dbh, $output_table);
-	dbinsert(	$dbh, $output_table, $output_columns, $output_values);
-	
-	echo date("[G:i:s] ") . '- ' . count($output_values) . ' rows inserted' . PHP_EOL;
-	$output_values	=	[];
+    try {
+        dbtruncate($dbh, $output_table);
+        dbinsert($dbh, $output_table, $output_columns, $output_values);
+        echo date("[G:i:s] ") . '- ' . count($output_values) . ' rows inserted' . PHP_EOL;
+    } catch (Exception $e) {
+		logError('Caught Exception: '    . $e->getMessage());
+    }
 	
 	return;
 }
@@ -996,13 +1174,9 @@ try {
 	###
 
 } catch (PDOException $e) {
-	
-	echo date("[G:i:s] ") . 'Caught PDOException: ' . $e->getMessage() . PHP_EOL;
-	
+	logError('Caught PDOException: ' . $e->getMessage());
 } catch (Exception $e) {
-	
-	echo date("[G:i:s] ") . 'Caught Exception: '    . $e->getMessage() . PHP_EOL;
-	
+	logError('Caught Exception: '    . $e->getMessage());
 } finally {
 
 	###
