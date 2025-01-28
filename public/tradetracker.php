@@ -212,7 +212,7 @@ function get_html_campaign_news_items($dbh) {
         $html .= '<td>' . htmlspecialchars($newsitem['name'], ENT_QUOTES, 'UTF-8') . '</td>';
         $html .= '<td>' . htmlspecialchars($newsitem['campaignNewsType'], ENT_QUOTES, 'UTF-8') . '</td>';
         $html .= '<td>' . htmlspecialchars($newsitem['title'], ENT_QUOTES, 'UTF-8') . '</td>';
-        $html .= '<td>' . htmlspecialchars($newsitem['content'], ENT_QUOTES, 'UTF-8') . '</td>';
+        $html .= '<td>' . $newsitem['content'] . '</td>';
         $html .= '<td>' . htmlspecialchars($newsitem['publishDate'], ENT_QUOTES, 'UTF-8') . '</td>';
         $html .= '<td>' . htmlspecialchars($newsitem['expirationDate'], ENT_QUOTES, 'UTF-8') . '</td>';
         $html .= '</tr>';
