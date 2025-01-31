@@ -49,8 +49,9 @@
      * Connects to the database using the provided configuration.
      * 
      * @param array $dbConfig The database configuration.
+     * @return void
      */
-    private function connect($dbConfig) {
+    private function connect(array $dbConfig): void {
         try {
             if (empty($dbConfig['db_pdo_driver_name']) || empty($dbConfig['db_hostname']) || empty($dbConfig['db_database']) || empty($dbConfig['db_username']) || empty($dbConfig['db_password'])) {
                 throw new InvalidArgumentException('Invalid database configuration');
@@ -82,7 +83,7 @@
      * 
      * @return PDO|null The PDO database connection handle, or null on failure.
      */
-    public function getConnection() {
+    public function getConnection(): PDO {
         return $this->dbh;
     }
 
@@ -93,7 +94,7 @@
      * @param array $params The parameters to bind to the SQL query.
      * @return array The fetched rows as an associative array.
      */
-    public function select($sql, $params = []) {
+    public function select(atring $sql, array $params = []): array {
         try {
             $stmt = $this->dbh->prepare($sql);
             $stmt->execute($params);
@@ -113,8 +114,9 @@
      * @param string $table The name of the table to insert into.
      * @param array $columns The columns to insert values into.
      * @param array $values The values to insert.
+     * @return void
      */
-    public function insert($table, $columns, $values) {
+    public function insert(string $table, array $columns, array $values): void {
         if (count($values) > 0) {
             $columns = implode(", ", $columns);
 
@@ -135,7 +137,16 @@
         }
     }
 
-    public function dbinsert($table, $columns, $values) {
+
+    /**
+     * Inserts multiple rows into a table V2.
+     * 
+     * @param string $table The name of the table to insert into.
+     * @param array $columns The columns to insert values into.
+     * @param array $values The values to insert.
+     * @return void
+     */
+    public function dbinsert(string $table, array $columns, array $values): void {
 
         if (count($values) > 0) {
             $columns_str = implode(", ", $columns);
@@ -160,8 +171,9 @@
      * @param string $level The log level (e.g., 'INFO', 'ERROR').
      * @param string $label A short label for the log entry.
      * @param string $description A detailed description of the log entry.
+     * @return void
      */
-    public function log($level, $label, $description) {
+    public function log(string $level, string $label, string $description): void {
         $outputColumns = ['level', 'label', 'description'];
         $outputValues = [$level, $label, $description];
         $this->insert('log', $outputColumns, $outputValues);
@@ -171,8 +183,9 @@
      * Truncates a table in the database.
      * 
      * @param string $tableName The name of the table to truncate.
+     * @return void
      */
-    public function truncate($tableName) {
+    public function truncate(string $tableName):void {
         try {
             $sql = 'TRUNCATE `' . $tableName . '`';
             $stmt = $this->dbh->prepare($sql);
@@ -189,8 +202,9 @@
      * Logs an error message.
      * 
      * @param string $message The error message to log.
+     * @return void
      */
-    private function logError($message) {
+    private function logError(string $message): void {
         echo date("[G:i:s] ") . $message . PHP_EOL;
     }
 }

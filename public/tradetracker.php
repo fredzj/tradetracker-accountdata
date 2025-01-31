@@ -48,7 +48,7 @@ header('Content-Type: text/html; charset=utf-8');
  * @param PDO $dbh The PDO database connection handle.
  * @return string The generated HTML table as a string.
  */
-function get_html_affiliatesites($dbh) {
+function get_html_affiliatesites(PDO $dbh): string {
 	
 	$html		=	'';
 	
@@ -103,7 +103,7 @@ function get_html_affiliatesites($dbh) {
  * @param NumberFormatter $fmtCUR The number formatter for currency formatting.
  * @return string The generated HTML table as a string.
  */
-function get_html_campaigns($dbh, $fmtCUR) {
+function get_html_campaigns(PDO $dbh, NumberFormatter $fmtCUR): string {
 
 	$html		=	'';
 	
@@ -181,7 +181,7 @@ function get_html_campaigns($dbh, $fmtCUR) {
  * @param string $suffix The suffix to append to the value (e.g., '%').
  * @return string The generated HTML table cell as a string.
  */
-function generate_commission_cell($value, $formatter = null, $suffix = '') {
+function generate_commission_cell(string $value, NumberFormatter $formatter = null, string $suffix = ''): string {
     if ($value <> '0.00') {
         if ($formatter) {
             return '<td>' . $formatter->formatCurrency($value, $suffix) . '</td>';
@@ -203,7 +203,7 @@ function generate_commission_cell($value, $formatter = null, $suffix = '') {
  * @param PDO $dbh The PDO database connection handle.
  * @return string The generated HTML table as a string.
  */
-function get_html_campaign_news_items($dbh) {
+function get_html_campaign_news_items(PDO $dbh): string {
 	
 	$html		=	'';
 	
@@ -252,7 +252,7 @@ function get_html_campaign_news_items($dbh) {
  * @param NumberFormatter $fmtCUR The number formatter for currency formatting.
  * @return string The generated HTML table as a string.
  */
-function get_html_click_transactions($dbh, $fmtCUR) {
+function get_html_click_transactions(PDO $dbh, NumberFormatter $fmtCUR): string {
 
 	$html		=	'';
 	
@@ -310,7 +310,7 @@ function get_html_click_transactions($dbh, $fmtCUR) {
  * @param NumberFormatter $fmtCUR The number formatter for currency formatting.
  * @return string The generated HTML table as a string.
  */
-function get_html_conversion_transactions($dbh, $fmtCUR) {
+function get_html_conversion_transactions(PDO $dbh, NumberFormatter $fmtCUR): string {
 
 	$html		=	'';
 	
@@ -390,7 +390,7 @@ function get_html_conversion_transactions($dbh, $fmtCUR) {
  * @param NumberFormatter $fmtDEC The number formatter for decimal formatting.
  * @return string The generated HTML table as a string.
  */
-function get_html_feeds($dbh, $fmtDEC) {
+function get_html_feeds(PDO $dbh, NumberFormatter $fmtDEC): string {
 	
 	$html		=	'';
 	$intervals	=	[ 'P1D' => 'every day'
@@ -465,7 +465,7 @@ function get_html_feeds($dbh, $fmtDEC) {
  * @param NumberFormatter $fmtCUR The number formatter for currency formatting.
  * @return string The generated HTML table as a string.
  */
-function get_html_payments($dbh, $fmtCUR) {
+function get_html_payments(PDO $dbh, NumberFormatter $fmtCUR): string {
 
 	$html		=	'';
 	
@@ -515,7 +515,7 @@ function get_html_payments($dbh, $fmtCUR) {
  * @param NumberFormatter $fmtDEC The number formatter for decimal formatting.
  * @return string The generated HTML table as a string.
  */
-function get_html_report_affiliatesites($dbh, $fmtCUR, $fmtDEC) {
+function get_html_report_affiliatesites(PDO $dbh, NumberFormatter $fmtCUR, NumberFormatter $fmtDEC): string {
 
 	$html		=	'';
 	
@@ -589,7 +589,7 @@ function get_html_report_affiliatesites($dbh, $fmtCUR, $fmtDEC) {
  * @param NumberFormatter $fmtDEC The number formatter for decimal formatting.
  * @return string The generated HTML table as a string.
  */
-function get_html_report_campaigns($dbh, $fmtCUR, $fmtDEC) {
+function get_html_report_campaigns(PDO $dbh, NumberFormatter$fmtCUR, NumberFormatter$fmtDEC): string {
 
 	$html		=	'';
 	
@@ -666,7 +666,7 @@ function get_html_report_campaigns($dbh, $fmtCUR, $fmtDEC) {
  * @param NumberFormatter $fmtDEC The number formatter for decimal formatting.
  * @return string The generated HTML table as a string.
  */
-function get_html_report_references($dbh, $fmtCUR, $fmtDEC) {
+function get_html_report_references(PDO $dbh, NumberFormatter $fmtCUR, NumberFormatter $fmtDEC): string {
 
 	$html			=	'';
 	

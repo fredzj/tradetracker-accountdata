@@ -48,8 +48,10 @@ class ExitHandler {
      * Handles the exit routine.
      * 
      * This method calculates the total execution time and memory usage, and displays them.
+     * 
+     * @return void
      */
-    public function handleExit() {
+    public function handleExit(): void {
         $executionTime = microtime(true) - $this->timeStart;
         $executionText = ($executionTime > 120) 
             ? round($executionTime / 60, 2) . " minutes" 
