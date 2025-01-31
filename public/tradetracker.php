@@ -1,4 +1,5 @@
 ﻿<?php
+header('Content-Type: text/html; charset=utf-8');
 /**
  * SCRIPT: tradetracker.php
  * PURPOSE: Show data from TradeTracker in a dashboard.
