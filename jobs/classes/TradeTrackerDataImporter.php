@@ -33,18 +33,20 @@
  * 
  * @author Fred Onis
  */
-
 class TradeTrackerDataImporter {
     private $db;
+	private $dbConfigPath;
     private $client;
     private $config;
-    private $url;
+    private $inputUrl;
     private $timeStart;
 
-    public function __construct($db, $url) {
-        $this->db = $db;
-        $this->url = $url;
+    public function __construct($dbConfigPath, $inputUrl) {
+        $this->db;
+		$this->dbConfigPath = $dbConfigPath;
+        $this->inputUrl = $inputUrl;
         $this->registerExitHandler();
+		$this->connectDatabase();
         $this->getConfig();
         $this->authenticate();
     }
@@ -84,6 +86,24 @@ class TradeTrackerDataImporter {
         }
     }
 
+	/**
+	 * Connects to the database using the configuration file.
+	 *
+	 * This method reads the database configuration from the specified INI file,
+	 * parses the configuration, and establishes a connection to the database.
+	 * If the configuration file cannot be parsed, an exception is thrown.
+	 *
+	 * @throws Exception If the configuration file cannot be parsed.
+	 * @return void
+	 */
+	private function connectDatabase() {
+		if (($dbConfig = parse_ini_file($this->dbConfigPath, FALSE, INI_SCANNER_TYPED)) === FALSE) {
+			throw new Exception("Parsing file " . $this->dbConfigPath	. " FAILED");
+		}
+		$this->db = new Database($dbConfig);
+		unset($dbConfig);
+	}
+
     /**
      * Authenticates the client with the TradeTracker API using SOAP.
      *
@@ -93,7 +113,7 @@ class TradeTrackerDataImporter {
      */
     private function authenticate(): void {
         try {
-            $this->client = new SoapClient($this->url, array('compression' => SOAP_COMPRESSION_ACCEPT | SOAP_COMPRESSION_GZIP));
+            $this->client = new SoapClient($this->inputUrl, array('compression' => SOAP_COMPRESSION_ACCEPT | SOAP_COMPRESSION_GZIP));
             $this->client->authenticate($this->config['customerID'], $this->config['passphrase'], $this->config['sandbox'], $this->config['locale'], $this->config['demo']);
             $this->logMessage('Successfully authenticated with TradeTracker API.');
         } catch (SoapFault $e) {

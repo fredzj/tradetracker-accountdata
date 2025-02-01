@@ -42,19 +42,12 @@ date_default_timezone_set(	'Europe/Amsterdam');
 mb_internal_encoding(		'UTF-8');
 setlocale(LC_ALL,			'nl_NL.utf8');
 
-// Parse the DB configuration file
-$filename = mb_substr(__DIR__, 0, mb_strrpos(__DIR__, '/')) . '/config/db.ini';
-if (($dbConfig = parse_ini_file($filename, FALSE, INI_SCANNER_TYPED)) === FALSE) {
-	throw new Exception("Parsing file " . $filename	. " FAILED");
-}
-
-// URL to fetch JSON data from
-$url = 'http://ws.tradetracker.com/soap/affiliate?wsdl';
+$dbConfigPath = mb_substr(__DIR__, 0, mb_strrpos(__DIR__, '/')) . '/config/db.ini';
+$inputUrl = 'http://ws.tradetracker.com/soap/affiliate?wsdl';
 
 // Create an instance of the importer and run the import
 try {
-	$db       = new Database($dbConfig);
-    $importer = new TradeTrackerDataImporter($db, $url);
+    $importer = new TradeTrackerDataImporter($dbConfigPath, $inputUrl);
     $importer->import();
 } catch (PDOException $e) {
     echo date("[G:i:s] ") . 'Caught PDOException: ' . $e->getMessage() . PHP_EOL;
