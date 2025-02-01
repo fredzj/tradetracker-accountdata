@@ -38,9 +38,9 @@ require 'classes/TradeTrackerDataImporter.php';
 require 'classes/ExitHandler.php';
 
 // Set defaults
-date_default_timezone_set(	'Europe/Amsterdam');
-mb_internal_encoding(		'UTF-8');
-setlocale(LC_ALL,			'nl_NL.utf8');
+date_default_timezone_set('Europe/Amsterdam');
+mb_internal_encoding('UTF-8');
+setlocale(LC_ALL, 'nl_NL.utf8');
 
 $dbConfigPath = mb_substr(__DIR__, 0, mb_strrpos(__DIR__, '/')) . '/config/db.ini';
 $inputUrl = 'http://ws.tradetracker.com/soap/affiliate?wsdl';
