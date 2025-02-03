@@ -39,12 +39,14 @@ class TradeTrackerDataImporter {
     private $client;
     private $config;
     private $inputUrl;
+	private $log;
     private $timeStart;
 
     public function __construct($dbConfigPath, $inputUrl) {
         $this->db;
 		$this->dbConfigPath = $dbConfigPath;
         $this->inputUrl = $inputUrl;
+		$this->log = new Log();
         $this->registerExitHandler();
 		$this->connectDatabase();
         $this->getConfig();
@@ -74,14 +76,14 @@ class TradeTrackerDataImporter {
         $rows = $this->db->select($sql);
     
         if (empty($rows)) {
-            $this->logMessage('Error: Configuration for TradeTracker not found.');
+            $this->log->error('Configuration for TradeTracker not found.');
             return;
         }
 
         $this->config = json_decode($rows[0]['configuration'], true);
 
         if (json_last_error() !== JSON_ERROR_NONE) {
-            $this->logMessage('Error: Failed to decode JSON configuration - ' . json_last_error_msg());
+            $this->log->error('Failed to decode JSON configuration - ' . json_last_error_msg());
             $this->config = [];
         }
     }
@@ -101,7 +103,6 @@ class TradeTrackerDataImporter {
 			throw new Exception("Parsing file " . $this->dbConfigPath	. " FAILED");
 		}
 		$this->db = new Database($dbConfig);
-		unset($dbConfig);
 	}
 
     /**
@@ -115,11 +116,11 @@ class TradeTrackerDataImporter {
         try {
             $this->client = new SoapClient($this->inputUrl, array('compression' => SOAP_COMPRESSION_ACCEPT | SOAP_COMPRESSION_GZIP));
             $this->client->authenticate($this->config['customerID'], $this->config['passphrase'], $this->config['sandbox'], $this->config['locale'], $this->config['demo']);
-            $this->logMessage('Successfully authenticated with TradeTracker API.');
+            $this->log->info('Successfully authenticated with TradeTracker API.');
         } catch (SoapFault $e) {
-            $this->logMessage('SOAP Error: ' . $e->getMessage());
+            $this->log->error('SOAP Error: ' . $e->getMessage());
         } catch (Exception $e) {
-            $this->logMessage('Error: ' . $e->getMessage());
+            $this->log->error($e->getMessage());
         }
     }
 
@@ -162,7 +163,7 @@ class TradeTrackerDataImporter {
      */
     private function getAffiliateSites(array &$affiliateSiteIDs): void {
 	
-        $this->logMessage('getAffiliateSites');
+        $this->log->info('getAffiliateSites');
 
         $outputColumns	=	['ID', 'name', 'URL', 'type', 'category', 'description', 'creationDate', 'status'];
         $outputTable	=	'vendor_tradetracker_affiliatesites';
@@ -186,10 +187,10 @@ class TradeTrackerDataImporter {
 			}
 			$this->db->truncate($outputTable);
 			$this->db->dbinsert($outputTable, $outputColumns, $outputValues);
-			$this->logMessage('- ' . count($outputValues) . ' rows inserted');
+			$this->log->info('- ' . count($outputValues) . ' rows inserted');
 
         } catch (Exception $e) {
-            $this->logMessage('Error: ' . $e->getMessage());
+            $this->log->error($e->getMessage());
         }
     }
 
@@ -200,7 +201,7 @@ class TradeTrackerDataImporter {
 	 */
     private function getAffiliateSiteCategories(): void {
 	
-        $this->logMessage('getAffiliateSiteCategories');
+        $this->log->info('getAffiliateSiteCategories');
 
         $outputColumns	=	['ID', 'name'];
         $outputTable	=	'vendor_tradetracker_affiliatesites_categories';
@@ -216,10 +217,10 @@ class TradeTrackerDataImporter {
 			}
 			$this->db->truncate($outputTable);
 			$this->db->dbinsert($outputTable, $outputColumns, $outputValues);
-			$this->logMessage('- ' . count($outputValues) . ' rows inserted');
+			$this->log->info('- ' . count($outputValues) . ' rows inserted');
 
         } catch (Exception $e) {
-            $this->logMessage('Error: ' . $e->getMessage());
+            $this->log->error('Error: ' . $e->getMessage());
         }
     }
 
@@ -230,7 +231,7 @@ class TradeTrackerDataImporter {
 	 */
     private function getAffiliateSiteTypes(): void {
  	
-        $this->logMessage('getAffiliateSiteTypes');
+        $this->log->info('getAffiliateSiteTypes');
 
         $outputColumns	=	['ID', 'name'];
         $outputTable	=	'vendor_tradetracker_affiliatesites_types';
@@ -246,10 +247,10 @@ class TradeTrackerDataImporter {
 			}
 			$this->db->truncate($outputTable);
 			$this->db->dbinsert($outputTable, $outputColumns, $outputValues);
-			$this->logMessage('- ' . count($outputValues) . ' rows inserted');
+			$this->log->info('- ' . count($outputValues) . ' rows inserted');
 
         } catch (Exception $e) {
-            $this->logMessage('Error: ' . $e->getMessage());
+            $this->log->error('Error: ' . $e->getMessage());
         }
     }
 
@@ -260,7 +261,7 @@ class TradeTrackerDataImporter {
 	 */
     private function getCampaignNewsItems(): void {
 	
-        $this->logMessage('getCampaignNewsItems');
+        $this->log->info('getCampaignNewsItems');
 
         $outputColumns	=	['id', 'campaignID', 'campaignNewsType', 'title', 'content', 'publishDate', 'expirationDate'];
         $outputTable	=	'vendor_tradetracker_campaigns_newsitems';
@@ -281,10 +282,10 @@ class TradeTrackerDataImporter {
 			}
 			$this->db->truncate($outputTable);
 			$this->db->dbinsert($outputTable, $outputColumns, $outputValues);
-			$this->logMessage('- ' . count($outputValues) . ' rows inserted');
+			$this->log->info('- ' . count($outputValues) . ' rows inserted');
 
         } catch (Exception $e) {
-            $this->logMessage('Error: ' . $e->getMessage());
+            $this->log->error($e->getMessage());
         }
     }
 
@@ -295,7 +296,7 @@ class TradeTrackerDataImporter {
 	 */
     private function getCampaignCategories(): void {
 	
-        $this->logMessage('getCampaignCategories');
+        $this->log->info('getCampaignCategories');
 
         $outputColumns	=	['ID', 'name', 'parentID'];
         $outputTable	=	'vendor_tradetracker_campaigns_categories';
@@ -321,10 +322,10 @@ class TradeTrackerDataImporter {
 			}
 			$this->db->truncate($outputTable);
 			$this->db->dbinsert($outputTable, $outputColumns, $outputValues);
-			$this->logMessage('- ' . count($outputValues) . ' rows inserted');
+			$this->log->info('- ' . count($outputValues) . ' rows inserted');
 
         } catch (Exception $e) {
-            $this->logMessage('Error: ' . $e->getMessage());
+            $this->log->error($e->getMessage());
         }
     }
 
@@ -337,7 +338,7 @@ class TradeTrackerDataImporter {
 	 */
     private function getCampaigns(array &$affiliateSiteIDs): void {
 	
-        $this->logMessage('getCampaigns');
+        $this->log->info('getCampaigns');
 	
         $outputColumns	=	['affiliateSiteID', 'campaignID', 'name', 'URL', 'category', 'subCategories', 'campaignDescription', 'shopDescription', 'targetGroup', 'characteristics', 'imageURL', 'trackingURL', 'impressionCommission', 'clickCommission', 'fixedCommission', 'leadCommission', 'saleCommissionFixed', 'saleCommissionVariable', 'iLeadCommission', 'iSaleCommissionFixed', 'iSaleCommissionVariable', 'assignmentStatus', 'startDate', 'stopDate', 'timeZone', 'clickToConversion', 'policySearchEngineMarketingStatus', 'policyEmailMarketingStatus', 'policyCashbackStatus', 'policyDiscountCodeStatus', 'deeplinkingSupported', 'referencesSupported', 'leadMaximumAssessmentInterval', 'leadAverageAssessmentInterval', 'saleMaximumAssessmentInterval', 'saleAverageAssessmentInterval', 'attributionModelLead', 'attributionModelSales'];
         $outputTable	=	'vendor_tradetracker_campaigns';
@@ -396,10 +397,10 @@ class TradeTrackerDataImporter {
 			}
 			$this->db->truncate($outputTable);
 			$this->db->dbinsert($outputTable, $outputColumns, $outputValues);
-			$this->logMessage('- ' . count($outputValues) . ' rows inserted');
+			$this->log->info('- ' . count($outputValues) . ' rows inserted');
 
         } catch (Exception $e) {
-            $this->logMessage('Error: ' . $e->getMessage());
+            $this->log->error($e->getMessage());
         }
     }
 
@@ -412,7 +413,7 @@ class TradeTrackerDataImporter {
 	 */
     private function getCampaignCommissionExtended(array &$affiliateSiteIDs): void {
 	
-        $this->logMessage('getCampaignCommissionExtended');
+        $this->log->info('getCampaignCommissionExtended');
 	
         $outputColumns	=	['affiliatesiteID', 'campaignID', 'impressionCommission', 'clickCommission', 'fixedCommission', 'products'];
         $outputTable	=	'vendor_tradetracker_campaigns_commissionextended';
@@ -452,10 +453,10 @@ class TradeTrackerDataImporter {
 			}
 			$this->db->truncate($outputTable);
 			$this->db->dbinsert($outputTable, $outputColumns, $outputValues);
-			$this->logMessage('- ' . count($outputValues) . ' rows inserted');
+			$this->log->info('- ' . count($outputValues) . ' rows inserted');
 
         } catch (Exception $e) {
-            $this->logMessage('Error: ' . $e->getMessage());
+            $this->log->error($e->getMessage());
         }
     }
 
@@ -468,7 +469,7 @@ class TradeTrackerDataImporter {
 	 */
     private function getClickTransactions(array &$affiliateSiteIDs): void {
 	
-        $this->logMessage('getClickTransactions');
+        $this->log->info('getClickTransactions');
 	
         $outputColumns	=	['affiliateSiteID', 'clickTransactionID', 'campaignID', 'reference', 'transactionType', 'transactionStatus', 'currency', 'commission', 'registrationDate', 'refererURL', 'paidOut'];
         $outputTable	=	'vendor_tradetracker_click_transactions';
@@ -495,10 +496,10 @@ class TradeTrackerDataImporter {
 			}
 			$this->db->truncate($outputTable);
 			$this->db->dbinsert($outputTable, $outputColumns, $outputValues);
-			$this->logMessage('- ' . count($outputValues) . ' rows inserted');
+			$this->log->info('- ' . count($outputValues) . ' rows inserted');
 
         } catch (Exception $e) {
-            $this->logMessage('Error: ' . $e->getMessage());
+            $this->log->error($e->getMessage());
         }
     }
 
@@ -511,7 +512,7 @@ class TradeTrackerDataImporter {
 	 */
     private function getConversionTransactions(array &$affiliateSiteIDs): void {
 	
-        $this->logMessage('getConversionTransactions');
+        $this->log->info('getConversionTransactions');
 	
         $outputColumns	=	['affiliatesiteID', 'conversionTransactionID', 'campaignID', 'campaignProduct', 'reference', 'transactionType', 'transactionStatus', 'numTouchPointsTotal', 'numTouchPointsAttributed', 'attributableCommission', 'description', 'currency', 'commission', 'orderAmount', 'IP', 'registrationDate', 'assessmentDate', 'clickToConversion', 'originatingClickDate', 'rejectionReason', 'paidOut', 'affiliateSitesPaidOut', 'countryCode', 'attributionModel'];
         $outputTable	=	'vendor_tradetracker_conversion_transactions';
@@ -558,10 +559,10 @@ class TradeTrackerDataImporter {
 			}
 			$this->db->truncate($outputTable);
 			$this->db->dbinsert($outputTable, $outputColumns, $outputValues);
-			$this->logMessage('- ' . count($outputValues) . ' rows inserted');
+			$this->log->info('- ' . count($outputValues) . ' rows inserted');
 
         } catch (Exception $e) {
-            $this->logMessage('Error: ' . $e->getMessage());
+            $this->log->error($e->getMessage());
         }
     }
 
@@ -574,7 +575,7 @@ class TradeTrackerDataImporter {
 	 */
     private function getFeeds(array &$affiliateSiteIDs): void {
 	
-        $this->logMessage('getFeeds');
+        $this->log->info('getFeeds');
 	
         $outputColumns	=	['affiliateSiteID', 'campaignID', 'feedID', 'name', 'URL', 'updateDate', 'updateInterval', 'productCount', 'assignmentStatus'];
         $outputTable	=	'vendor_tradetracker_feeds';
@@ -602,10 +603,10 @@ class TradeTrackerDataImporter {
 			}
 			$this->db->truncate($outputTable);
 			$this->db->dbinsert($outputTable, $outputColumns, $outputValues);
-			$this->logMessage('- ' . count($outputValues) . ' rows inserted');
+			$this->log->info('- ' . count($outputValues) . ' rows inserted');
 
         } catch (Exception $e) {
-            $this->logMessage('Error: ' . $e->getMessage());
+            $this->log->error($e->getMessage());
         }
     }
 
@@ -616,7 +617,7 @@ class TradeTrackerDataImporter {
 	 */
     private function getMaterialBannerDimensions(): void {
 	
-        $this->logMessage('getMaterialBannerDimensions');
+        $this->log->info('getMaterialBannerDimensions');
 
         $outputColumns	=	['ID', 'width', 'height', 'isCommon', 'isMobile'];
         $outputTable	=	'vendor_tradetracker_material_bannerdimensions';
@@ -635,10 +636,10 @@ class TradeTrackerDataImporter {
 			}
 			$this->db->truncate($outputTable);
 			$this->db->dbinsert($outputTable, $outputColumns, $outputValues);
-			$this->logMessage('- ' . count($outputValues) . ' rows inserted');
+			$this->log->info('- ' . count($outputValues) . ' rows inserted');
 
         } catch (Exception $e) {
-            $this->logMessage('Error: ' . $e->getMessage());
+            $this->log->error($e->getMessage());
         }
     }
 
@@ -651,7 +652,7 @@ class TradeTrackerDataImporter {
 	 */
     private function getMaterialBannerFlashItems(array &$affiliateSiteIDs): void {
 	
-        $this->logMessage('getMaterialBannerFlashItems');
+        $this->log->info('getMaterialBannerFlashItems');
 	
         $materialOutputTypes	=	['html', 'javascript', 'iframe', 'popup', 'popunder'];
         
@@ -688,10 +689,10 @@ class TradeTrackerDataImporter {
 			}
 			$this->db->truncate($outputTable);
 			$this->db->dbinsert($outputTable, $outputColumns, $outputValues);
-			$this->logMessage('- ' . count($outputValues) . ' rows inserted');
+			$this->log->info('- ' . count($outputValues) . ' rows inserted');
 
         } catch (Exception $e) {
-            $this->logMessage('Error: ' . $e->getMessage());
+            $this->log->error($e->getMessage());
         }
     }
 
@@ -704,7 +705,7 @@ class TradeTrackerDataImporter {
 	 */
     private function getMaterialBannerImageItems(array &$affiliateSiteIDs): void {
 	
-        $this->logMessage('getMaterialBannerImageItems');
+        $this->log->info('getMaterialBannerImageItems');
 	
         $materialOutputTypes	=	['html', 'javascript', 'iframe', 'popup', 'popunder'];
         
@@ -741,10 +742,10 @@ class TradeTrackerDataImporter {
 			}
 			$this->db->truncate($outputTable);
 			$this->db->dbinsert($outputTable, $outputColumns, $outputValues);
-			$this->logMessage('- ' . count($outputValues) . ' rows inserted');
+			$this->log->info('- ' . count($outputValues) . ' rows inserted');
 
         } catch (Exception $e) {
-            $this->logMessage('Error: ' . $e->getMessage());
+            $this->log->error($e->getMessage());
         }
     }
 
@@ -757,7 +758,7 @@ class TradeTrackerDataImporter {
 	 */
     private function getMaterialHTMLItems(array &$affiliateSiteIDs): void {
 	
-        $this->logMessage('getMaterialHTMLItems');
+        $this->log->info('getMaterialHTMLItems');
 	
         $materialOutputTypes	=	['html', 'javascript', 'iframe', 'popup', 'popunder'];
         
@@ -794,10 +795,10 @@ class TradeTrackerDataImporter {
 			}
 			$this->db->truncate($outputTable);
 			$this->db->dbinsert($outputTable, $outputColumns, $outputValues);
-			$this->logMessage('- ' . count($outputValues) . ' rows inserted');
+			$this->log->info('- ' . count($outputValues) . ' rows inserted');
 
         } catch (Exception $e) {
-            $this->logMessage('Error: ' . $e->getMessage());
+            $this->log->error($e->getMessage());
         }
     }
 
@@ -810,7 +811,7 @@ class TradeTrackerDataImporter {
 	 */
     private function getMaterialIncentiveVoucherItems(array &$affiliateSiteIDs): void {
 	
-        $this->logMessage('getMaterialIncentiveVoucherItems');
+        $this->log->info('getMaterialIncentiveVoucherItems');
 	
         $materialOutputTypes	=	['html', 'javascript', 'rss'];
         
@@ -847,10 +848,10 @@ class TradeTrackerDataImporter {
 			}
 			$this->db->truncate($outputTable);
 			$this->db->dbinsert($outputTable, $outputColumns, $outputValues);
-			$this->logMessage('- ' . count($outputValues) . ' rows inserted');
+			$this->log->info('- ' . count($outputValues) . ' rows inserted');
 
         } catch (Exception $e) {
-            $this->logMessage('Error: ' . $e->getMessage());
+            $this->log->error($e->getMessage());
         }
     }
 
@@ -863,7 +864,7 @@ class TradeTrackerDataImporter {
 	 */
     private function getMaterialIncentiveOfferItems(array &$affiliateSiteIDs): void {
 	
-        $this->logMessage('getMaterialIncentiveOfferItems');
+        $this->log->info('getMaterialIncentiveOfferItems');
 	
         $materialOutputTypes	=	['html', 'javascript', 'rss'];
         
@@ -900,10 +901,10 @@ class TradeTrackerDataImporter {
 			}
 			$this->db->truncate($outputTable);
 			$this->db->dbinsert($outputTable, $outputColumns, $outputValues);
-			$this->logMessage('- ' . count($outputValues) . ' rows inserted');
+			$this->log->info('- ' . count($outputValues) . ' rows inserted');
 
         } catch (Exception $e) {
-            $this->logMessage('Error: ' . $e->getMessage());
+            $this->log->error($e->getMessage());
         }
     }
 
@@ -916,7 +917,7 @@ class TradeTrackerDataImporter {
 	 */
     private function getMaterialTextItems(array &$affiliateSiteIDs): void {
 	
-        $this->logMessage('getMaterialTextItems');
+        $this->log->info('getMaterialTextItems');
 	
         $materialOutputTypes	=	['html', 'javascript'];
         
@@ -953,10 +954,10 @@ class TradeTrackerDataImporter {
 			}
 			$this->db->truncate($outputTable);
 			$this->db->dbinsert($outputTable, $outputColumns, $outputValues);
-			$this->logMessage('- ' . count($outputValues) . ' rows inserted');
+			$this->log->info('- ' . count($outputValues) . ' rows inserted');
 
         } catch (Exception $e) {
-            $this->logMessage('Error: ' . $e->getMessage());
+            $this->log->error($e->getMessage());
         }
     }
 
@@ -967,7 +968,7 @@ class TradeTrackerDataImporter {
 	 */
     private function getPayments(): void {
 	
-        $this->logMessage('getPayments');
+        $this->log->info('getPayments');
 
         $outputColumns	=	['invoiceNumber', 'currency', 'subTotal', 'VAT', 'endTotal', 'billDate', 'payDate'];
         $outputTable	=	'vendor_tradetracker_payments';
@@ -988,10 +989,10 @@ class TradeTrackerDataImporter {
 			}
 			$this->db->truncate($outputTable);
 			$this->db->dbinsert($outputTable, $outputColumns, $outputValues);
-			$this->logMessage('- ' . count($outputValues) . ' rows inserted');
+			$this->log->info('- ' . count($outputValues) . ' rows inserted');
 
         } catch (Exception $e) {
-            $this->logMessage('Error: ' . $e->getMessage());
+            $this->log->error($e->getMessage());
         }
     }
 
@@ -1004,7 +1005,7 @@ class TradeTrackerDataImporter {
 	 */
     private function getReportAffiliateSite(array &$affiliateSiteIDs): void {
 	
-        $this->logMessage('getReportAffiliateSite');
+        $this->log->info('getReportAffiliateSite');
 	
         $outputColumns	=	['affiliateSiteID', 'overallImpressionCount', 'uniqueImpressionCount', 'impressionCommission', 'overallClickCount', 'uniqueClickCount', 'clickCommission', 'leadCount', 'leadCommission', 'saleCount', 'saleCommission', 'fixedCommission', 'CTR', 'CLR', 'CSR', 'eCPM', 'EPC', 'totalCommission'];
         $outputTable	=	'vendor_tradetracker_report_affiliatesite';
@@ -1038,10 +1039,10 @@ class TradeTrackerDataImporter {
 			}
 			$this->db->truncate($outputTable);
 			$this->db->dbinsert($outputTable, $outputColumns, $outputValues);
-			$this->logMessage('- ' . count($outputValues) . ' rows inserted');
+			$this->log->info('- ' . count($outputValues) . ' rows inserted');
 
         } catch (Exception $e) {
-            $this->logMessage('Error: ' . $e->getMessage());
+            $this->log->error($e->getMessage());
         }
     }
 
@@ -1054,7 +1055,7 @@ class TradeTrackerDataImporter {
 	 */
     private function getReportCampaign(array &$affiliateSiteIDs): void {
 	
-        $this->logMessage('getReportCampaign');
+        $this->log->info('getReportCampaign');
 	
         $outputColumns	=	['affiliateSiteID', 'campaignID', 'overallImpressionCount', 'uniqueImpressionCount', 'impressionCommission', 'overallClickCount', 'uniqueClickCount', 'clickCommission', 'leadCount', 'leadCommission', 'saleCount', 'saleCommission', 'fixedCommission', 'CTR', 'CLR', 'CSR', 'eCPM', 'EPC', 'totalCommission'];
         $outputTable	=	'vendor_tradetracker_report_affiliatesite_campaign';
@@ -1089,10 +1090,10 @@ class TradeTrackerDataImporter {
 			}
 			$this->db->truncate($outputTable);
 			$this->db->dbinsert($outputTable, $outputColumns, $outputValues);
-			$this->logMessage('- ' . count($outputValues) . ' rows inserted');
+			$this->log->info('- ' . count($outputValues) . ' rows inserted');
 
         } catch (Exception $e) {
-            $this->logMessage('Error: ' . $e->getMessage());
+            $this->log->error($e->getMessage());
         }
     }
 
@@ -1107,7 +1108,7 @@ class TradeTrackerDataImporter {
      */
     private function getReportReference(array &$affiliateSiteIDs): void {
 	
-        $this->logMessage('getReportReference');
+        $this->log->info('getReportReference');
 	
         $outputColumns  = [
             'affiliateSiteID', 'campaignID', 'reference', 'overallImpressionCount', 'uniqueImpressionCount', 
@@ -1126,10 +1127,10 @@ class TradeTrackerDataImporter {
 
             $this->db->truncate($outputTable);
             $this->db->dbinsert($outputTable, $outputColumns, $outputValues);
-            $this->logMessage('- ' . count($outputValues) . ' rows inserted');
+            $this->log->info('- ' . count($outputValues) . ' rows inserted');
 
         } catch (Exception $e) {
-            $this->logMessage('Error: ' . $e->getMessage());
+            $this->log->error($e->getMessage());
         }
     }
 
@@ -1173,15 +1174,5 @@ class TradeTrackerDataImporter {
         }
     
         return $outputValues;
-    }
-    /**
-     * Logs a message with a timestamp.
-     *
-     * @param string $message The message to log.
-     *
-     * @return string
-     */
-    private function logMessage($message) {
-        echo date("[G:i:s] ") . $message . PHP_EOL;
     }
 }
