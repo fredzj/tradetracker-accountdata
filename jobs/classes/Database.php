@@ -36,7 +36,6 @@
  class Database {
     private $dbh;
     private $log;
-
     /**
      * Database constructor.
      * 
@@ -157,6 +156,31 @@
         $outputColumns = ['level', 'label', 'description'];
         $outputValues = [$level, $label, $description];
         $this->insert('log', $outputColumns, $outputValues);
+    }
+
+	/**
+	* Execute a query and return the results.
+	*
+	* This method prepares and executes a query with optional parameters and returns the fetched rows as an associative array.
+	* If an exception occurs during the query execution, it is caught and logged.
+	*
+	* @param string $sql The SQL query to execute.
+	* @param array $params Optional parameters to bind to the query.
+	*
+	* @return array The fetched rows as an associative array. Returns an empty array if an error occurs.
+	*/
+    public function query(string $sql, array $params = []): array {
+        try {
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->execute($params);
+            $fetchedRows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $stmt->closeCursor();
+            return $fetchedRows;
+
+        } catch (PDOException $e) {
+            $this->log->error('Caught PDOException: ' . $e->getMessage());
+            return [];
+        }
     }
 
 	/**
